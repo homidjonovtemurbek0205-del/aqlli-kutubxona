@@ -4,11 +4,11 @@ def init_db():
     conn = sqlite3.connect('library.db')
     cursor = conn.cursor()
     
-    # Jadvalni yangi "content" ustuni bilan yaratish
+       # TO'G'RI KOD BLOKI:
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS books (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT EXISTS,
+        title TEXT,
         author TEXT,
         genre TEXT,
         description TEXT,
