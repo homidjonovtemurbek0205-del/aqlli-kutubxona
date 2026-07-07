@@ -183,6 +183,41 @@ def chat():
     
     return jsonify({"reply": ai_reply})
 
+from flask import url_for # Agar fayl tepasida url_for bo'lmasa, buni qoldiring
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_panel():
+    conn = get_db_connection()
+    
+    # Forma yuborilganda (Yangi kitob qo'shish)
+    if request.method == 'POST':
+        title = request.form['title']
+        author = request.form['author']
+        genre = request.form['genre']
+        description = request.form['description']
+        
+        if title and author:
+            conn.execute(
+                'INSERT INTO books (title, author, genre, description) VALUES (?, ?, ?, ?)',
+                (title, author, genre, description)
+            )
+            conn.commit()
+            conn.close()
+            return redirect(url_for('admin_panel'))
+            
+    # Kitob o'chirish jarayoni
+    elif request.args.get('delete'):
+        book_id = request.args.get('delete')
+        conn.execute('DELETE FROM books WHERE id = ?', (book_id,))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('admin_panel'))
+
+    # Mavjud kitoblarni listga chiqarish
+    books = conn.execute('SELECT * FROM books ORDER BY id DESC').fetchall()
+    conn.close()
+    return render_template('admin.html', books=books)
+
 # Flask ilovasini localhost (127.0.0.1) port 5000 da ishga tushiramiz
 if __name__ == '__main__':
     # Agar baza bo'lmasa, avtomat yaratish mantiqi
