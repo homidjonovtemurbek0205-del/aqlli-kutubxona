@@ -8,6 +8,17 @@ from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
 load_dotenv(dotenv_path)
 
+# Ma'lumotlar bazasi yo'q bo'lsa, avtomat yaratish mantiqi
+import os
+from db_setup import init_db  # Agar sizda funksiya nomi boshqacha bo'lsa, o'shani yozing
+
+# Har safar sayt ishga tushganda bazani tekshiradi
+if not os.path.exists('library.db'):
+    print("[*] Ma'lumotlar bazasi topilmadi. Yangi baza yaratilmoqda...")
+    init_db()
+    print("[*] Ma'lumotlar bazasi muvaffaqiyatli yaratildi va namunaviy kitoblar yuklandi.")
+
+
 print(f"[*] Tizim sozlamalari yuklanmoqda... .env fayli: {dotenv_path}")
 print(f"[*] GEMINI_API_KEY yuklandimi: {bool(os.getenv('GEMINI_API_KEY'))}")
 
