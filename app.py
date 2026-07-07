@@ -172,6 +172,12 @@ def chat():
     
     return jsonify({"reply": ai_reply})
 
+# Flask ilovasini localhost (127.0.0.1) port 5000 da ishga tushiramiz
 if __name__ == '__main__':
-    # Flask ilovasini localhost (127.0.0.1) port 5000 da ishga tushiramiz
-    app.run(debug=True, port=5000)
+    # Agar baza bo'lmasa, avtomat yaratish mantiqi
+    import os
+    if not os.path.exists('library.db'):
+        from db_setup import init_db
+        init_db() # Ma'lumotlar bazasini noldan qurish funksiyasi
+
+    app.run(debug=True)
