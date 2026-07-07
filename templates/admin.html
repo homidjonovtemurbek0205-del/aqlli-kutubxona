@@ -42,83 +42,82 @@
         <div id="status-lbl"></div>
     </div>
 
-    <script>
-    async function processZip(input) {
-        if (input.files.length === 0) return;
-        
-        const file = input.files[0];
-        document.getElementById('file-label').innerText = "📂 Tanlandi: " + file.name;
-        document.getElementById('file-label').style.color = "#03dac6";
-        
-        const progressArea = document.getElementById('progress-area');
-        const pBar = document.getElementById('p-bar');
-        const statusLbl = document.getElementById('status-lbl');
-        
-        progressArea.style.display = "block";
-        statusLbl.innerText = "🔍 Arxiv kompyuterda ochilmoqda...";
-        pBar.style.width = "20%";
+<script>
+async function processZip(input) {
+    if (input.files.length === 0) return;
+    
+    // Faylni to'g'ri o'qib olish (Fiks qilindi)
+    const file = input.files[0]; 
+    document.getElementById('file-label').innerText = "📂 Tanlandi: " + file.name;
+    document.getElementById('file-label').style.color = "#03dac6";
+    
+    const progressArea = document.getElementById('progress-area');
+    const pBar = document.getElementById('p-bar');
+    const statusLbl = document.getElementById('status-lbl');
+    
+    progressArea.style.display = "block";
+    statusLbl.innerText = "🔍 Arxiv kompyuterda ochilmoqda...";
+    pBar.style.width = "20%";
 
-        const jszip = new JSZip();
-        try {
-            // ZIP arxivini brauzer xotirasida ochish
-            const zip = await jszip.loadAsync(file);
-            const booksToUpload = [];
+    const jszip = new JSZip();
+    try {
+        const zip = await jszip.loadAsync(file);
+        const booksToUpload = [];
 
-            pBar.style.width = "40%";
-            statusLbl.innerText = "📖 Kitob matnlari o'qilmoqda...";
+        pBar.style.width = "40%";
+        statusLbl.innerText = "📖 Kitob matnlari o'qilmoqda...";
 
-            for (let filename in zip.files) {
-                if (filename.endsWith('.txt') && !filename.startsWith('__MACOSX')) {
-                    const content = await zip.files[filename].async("string");
-                    let cleanName = filename.replace('.txt', '');
-                    let title = cleanName;
-                    let author = "Noma'lum muallif";
-                    
-                    if (cleanName.includes(" - ")) {
-                        const parts = cleanName.split(" - ");
-                        title = parts[0];
-                        author = parts[1];
-                    }
-
-                    booksToUpload.append({
-                        title: title.trim(),
-                        author: author.trim(),
-                        genre: "Elektron Kitob",
-                        description: "Ommaviy yuklangan mukammal asar.",
-                        content: content
-                    });
+        for (let filename in zip.files) {
+            if (filename.endswith('.txt') && !filename.startsWith('__MACOSX')) {
+                const content = await zip.files[filename].async("string");
+                let cleanName = filename.replace('.txt', '');
+                let title = cleanName;
+                let author = "Noma'lum muallif";
+                
+                if (cleanName.includes(" - ")) {
+                    const parts = cleanName.split(" - ");
+                    title = parts[0];
+                    author = parts[1];
                 }
+
+                booksToUpload.push({
+                    title: title.trim(),
+                    author: author.trim(),
+                    genre: "Elektron Kitob",
+                    description: "Ommaviy yuklangan mukammal asar.",
+                    content: content
+                });
             }
-
-            if (booksToUpload.length === 0) {
-                statusLbl.innerText = "❌ Arxiv ichida .txt formatdagi kitoblar topilmadi!";
-                statusLbl.style.color = "#cf6679";
-                return;
-            }
-
-            pBar.style.width = "70%";
-            statusLbl.innerText = `⚡ ${booksToUpload.length} ta kitob Render serveriga xavfsiz uzatilmoqda...`;
-
-            // Serverga JSON ko'rinishida yengil yuborish
-            const response = await fetch('/admin', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({books: booksToUpload})
-            });
-
-            if (response.ok) {
-                pBar.style.width = "100%";
-                statusLbl.innerText = `🎉 Muvaffaqiyatli yakunlandi! barcha kitoblar bazaga yuklandi.`;
-                statusLbl.style.color = "#03dac6";
-            } else {
-                throw new Error("Server xatosi");
-            }
-
-        } catch (err) {
-            statusLbl.innerText = "❌ Yuklashda xatolik yuz berdi. Arxiv shikastlangan bo'lishi mumkin.";
-            statusLbl.style.color = "#cf6679";
         }
+
+        if (booksToUpload.length === 0) {
+            statusLbl.innerText = "❌ Arxiv ichida .txt formatdagi kitoblar topilmadi!";
+            statusLbl.style.color = "#cf6679";
+            return;
+        }
+
+        pBar.style.width = "70%";
+        statusLbl.innerText = `⚡ ${booksToUpload.length} ta kitob Render serveriga xavfsiz uzatilmoqda...`;
+
+        const response = await fetch('/admin', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({books: booksToUpload})
+        });
+
+        if (response.ok) {
+            pBar.style.width = "100%";
+            statusLbl.innerText = `🎉 Muvaffaqiyatli yakunlandi! barcha kitoblar bazaga yuklandi.`;
+            statusLbl.style.color = "#03dac6";
+        } else {
+            throw new Error("Server xatosi");
+        }
+
+    } catch (err) {
+        statusLbl.innerText = "❌ Yuklashda xatolik yuz berdi. Arxivni qayta tekshiring.";
+        statusLbl.style.color = "#cf6679";
     }
-    </script>
+}
+</script>
 </body>
 </html>
