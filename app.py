@@ -12,16 +12,11 @@ load_dotenv(dotenv_path)
 
 gemini_key = os.getenv("GEMINI_API_KEY")
 
-# Tizim sozlamalari yuklanmoqda
-print("[*] Tizim sozlamalari yuklanmoqda...")
-print(f"[*] GEMINI_API_KEY yuklandimi: {bool(gemini_key)}")
-
 app = Flask(__name__)
 
 # Gemini API sozlamalari
 if gemini_key:
     genai.configure(api_key=gemini_key)
-    # Bevosita bepul va barqaror modelni tanlaymiz
     model = genai.GenerativeModel('gemini-1.5-flash')
 else:
     model = None
@@ -33,10 +28,8 @@ def get_db_connection():
 
 # Ma'lumotlar bazasi yo'q bo'lsa, avtomat yaratish mantiqi
 if not os.path.exists('library.db'):
-    print("[*] Ma'lumotlar bazasi topilmadi. Yangi baza yaratilmoqda...")
     from db_setup import init_db
     init_db()
-    print("[*] Ma'lumotlar bazasi muvaffaqiyatli yaratildi.")
 
 @app.route('/')
 def index():
@@ -59,22 +52,6 @@ def admin_panel():
     conn = get_db_connection()
     
     if request.method == 'POST':
-        # 1. Bittalik kitob yuklash
-        title = request.form.get('title')
-        author = request.form.get('author')
-        genre = request.form.get('genre', 'Badiiy')
-        description = request.form.get('description', '')
-        file = request.files.get('book_file')
-        
-        if title and author and file and file.filename.endswith('.txt'):
-            content = file.read().decode('utf-8')
-            conn.execute(
-                'INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)',
-                (title, author, genre, description, content)
-            )
-            conn.commit()
-
-        # 2. Ommaviy yuklash (ZIP ARXIV)
         zip_file = request.files.get('zip_file')
         if zip_file and zip_file.filename.endswith('.zip'):
             with zipfile.ZipFile(zip_file) as archive:
@@ -90,17 +67,9 @@ def admin_panel():
                                 
                             conn.execute(
                                 'INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)',
-                                (b_title.strip(), b_author.strip(), "Elektron Kitob", "Ommaviy yuklangan asar.", content)
+                                (b_title.strip(), b_author.strip(), "Elektron Kitob", "Ommaviy yuklangan mukammal asar.", content)
                             )
                 conn.commit()
-                
-        conn.close()
-        return redirect(url_for('admin_panel'))
-        
-    elif request.args.get('delete'):
-        book_id = request.args.get('delete')
-        conn.execute('DELETE FROM books WHERE id = ?', (book_id,))
-        conn.commit()
         conn.close()
         return redirect(url_for('admin_panel'))
 

@@ -2,71 +2,46 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>Kutubxona - Admin Panel</title>
+    <title>Kutubxona - VIP Admin Panel</title>
     <style>
-        body { background: #121212; color: #fff; font-family: sans-serif; padding: 40px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1, h2 { color: #bb86fc; }
-        form { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-        input, textarea { width: 95%; padding: 10px; margin: 10px 0; background: #2d2d2d; color: #fff; border: 1px solid #444; border-radius: 4px; }
-        button { background: #bb86fc; color: #121212; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
-        th { background: #1e1e1e; color: #bb86fc; }
-        .btn-delete { color: #cf6679; text-decoration: none; font-weight: bold; }
-        .btn-back { display: inline-block; margin-bottom: 20px; color: #03dac6; text-decoration: none; }
+        body { background: #0f0f15; color: #fff; font-family: sans-serif; padding: 40px; display: flex; justify-content: center; align-items: center; min-height: 80vh; }
+        .admin-box { max-width: 600px; width: 100%; background: #161622; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #232335; text-align: center; }
+        h1 { color: #bb86fc; margin-bottom: 10px; font-size: 28px; }
+        p { color: #8a8a9e; font-size: 14px; margin-bottom: 30px; line-height: 1.5; }
+        .upload-area { border: 2px dashed #bb86fc; padding: 50px 20px; border-radius: 12px; background: #1e1e2f; cursor: pointer; transition: all 0.3s; position: relative; }
+        .upload-area:hover { background: #25253b; border-color: #03dac6; }
+        .file-input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .upload-icon { font-size: 60px; margin-bottom: 15px; display: inline-block; animation: float 3s infinite ease-in-out; }
+        button { width: 100%; background: linear-gradient(135deg, #bb86fc, #6200ee); color: #fff; padding: 16px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; margin-top: 25px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(187, 134, 252, 0.4); }
+        button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(187, 134, 252, 0.6); }
+        .btn-back { display: inline-block; color: #03dac6; text-decoration: none; font-size: 14px; margin-bottom: 20px; font-weight: bold; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="admin-box">
         <a href="/" class="btn-back">← Bosh sahifaga qaytish</a>
-        <h1>📚 Kutubxona boshqaruv paneli</h1>
+        <h1>📦 Ommaviy Kutubxona Yuklagichi</h1>
+        <p>Kitoblarni bittalab qo'shib o'tirmang! Hammasini `.txt` qilib bitta `.zip` arxivga joylang va shu yerga yuklang.</p>
         
-        <!-- Kitob qo'shish formasi -->
         <form method="POST" enctype="multipart/form-data">
-            <h2>Yangi kitob qo'shish</h2>
-            <!-- admin.html formasi ichiga qo'shing -->
-            <div style="margin-top: 20px; border-top: 1px dashed #444; padding-top: 20px;">
-                <h3>📦 Ko'p kitoblarni bittada yuklash (ZIP arxiv)</h3>
-                <p style="color: #a0a0a0; font-size: 14px;">Kitoblarni .txt formatida tayyorlab, hammasini bitta .zip arxivga joylang. Har bir fayl nomi 'Kitob_Nomi - Muallif.txt' ko'rinishida bo'lsin.</p>
-                <input type="file" name="zip_file" accept=".zip">
+            <div class="upload-area">
+                <span class="upload-icon">🚀</span>
+                <h3 id="file-label">ZIP faylni tanlang yoki shu yerga tashlang</h3>
+                <span style="color: #6c6c80; font-size: 12px; display:block; margin-top:10px;">Format: Kitob_Nomi - Muallif.txt</span>
+                <input type="file" name="zip_file" class="file-input" accept=".zip" required onchange="updateLabel(this)">
             </div>
-
-            <!-- admin.html ichidagi formaga qo'shing -->
-            <!-- admin.html ichidagi formaga qo'shing -->
-            <label style="display:block; margin:10px 0; color:#bb86fc;">Kitob faylini yuklang (.txt formatda):</label>
-            <input type="file" name="book_file" accept=".txt" required>
-            <input type="text" name="title" placeholder="Kitob nomi" required>
-            <input type="text" name="author" placeholder="Muallif" required>
-            <input type="text" name="genre" placeholder="Janri (masalan: Roman, Tarixiy)">
-            <textarea name="description" placeholder="Kitob haqida qisqacha tavsif" rows="4"></textarea>
-            <button type="submit">Baza sahifasiga saqlash</button>
+            <button type="submit">📚 Hamma kitoblarni bazaga yuklash</button>
         </form>
-
-        <!-- Kitoblar ro'yxati -->
-        <h2>Mavjud Kitoblar</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nomi</th>
-                    <th>Muallif</th>
-                    <th>Janri</th>
-                    <th>Amal</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for book in books %}
-                <tr>
-                    <td>{{ book.id }}</td>
-                    <td>{{ book.title }}</td>
-                    <td>{{ book.author }}</td>
-                    <td>{{ book.genre }}</td>
-                    <td><a href="/admin?delete={{ book.id }}" class="btn-delete" onclick="return confirm('Ishonchingiz komilmi?')">O'chirish</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
     </div>
+
+    <script>
+    function updateLabel(input) {
+        if(input.files.length > 0) {
+            document.getElementById('file-label').innerText = "📂 Tanlandi: " + input.files[0].name;
+            document.getElementById('file-label').style.color = "#03dac6";
+        }
+    }
+    </script>
 </body>
 </html>

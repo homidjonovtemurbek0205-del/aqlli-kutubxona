@@ -1,770 +1,88 @@
-<!DOCTYPE html>
-<html lang="uz">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aqlli Kutubxona | AI Tavsiyalari</title>
-    <!-- Google Fonts va FontAwesome Ulanishi -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Har bitta kitob kartasining ichidagi tugmalar bo'limi -->
+<div class="book-actions" style="margin-top: 20px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
     
-    <style>
-        /* Premium Glassmorphism & Dark Mode Dizayn Tizimi */
-        :root {
-            --bg-gradient: linear-gradient(135deg, #0d0b18 0%, #15102a 50%, #080610 100%);
-            --panel-bg: rgba(255, 255, 255, 0.03);
-            --panel-border: rgba(255, 255, 255, 0.08);
-            --primary: #8b5cf6; /* Violet */
-            --primary-glow: rgba(139, 92, 246, 0.4);
-            --secondary: #14b8a6; /* Teal */
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --danger: #ef4444;
-            --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: var(--font);
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
-
-        /* Navigatsiya */
-        header {
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid var(--panel-border);
-            backdrop-filter: blur(12px);
-            background: rgba(13, 11, 24, 0.5);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(to right, #a78bfa, var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo i {
-            color: var(--primary);
-            -webkit-text-fill-color: initial;
-        }
-
-        /* Asosiy Konteyner */
-        .container {
-            max-width: 1200px;
-            width: 100%;
-            margin: 2rem auto;
-            padding: 0 1.5rem;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 2rem;
-            flex-grow: 1;
-        }
-
-        @media (max-width: 900px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Glassmorphic Panel (Card) */
-        .glass-panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--panel-border);
-            border-radius: 20px;
-            padding: 2rem;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-
-        /* Sarlavhalar */
-        h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #ffffff;
-        }
-
-        h2 i {
-            color: var(--secondary);
-        }
-
-        /* Formalar */
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--panel-border);
-            border-radius: 10px;
-            color: #ffffff;
-            font-family: var(--font);
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 8px var(--primary-glow);
-        }
-
-        textarea.form-control {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        /* Tugmalar */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 10px;
-            font-family: var(--font);
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            width: 100%;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 14px var(--primary-glow);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
-        }
-
-        .btn-danger-icon {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 0.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: auto;
-        }
-
-        .btn-danger-icon:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        /* Kitoblar Ro'yxati */
-        .books-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .book-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--panel-border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .book-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        .book-genre {
-            align-self: flex-start;
-            font-size: 0.75rem;
-            background: rgba(20, 184, 166, 0.1);
-            color: var(--secondary);
-            padding: 0.25rem 0.6rem;
-            border-radius: 20px;
-            margin-bottom: 0.75rem;
-            font-weight: 600;
-        }
-
-        .book-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #ffffff;
-            margin-bottom: 0.25rem;
-        }
-
-        .book-author {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .book-desc {
-            font-size: 0.85rem;
-            color: #d1d5db;
-            line-height: 1.4;
-            flex-grow: 1;
-            margin-bottom: 1.25rem;
-        }
-
-        .book-footer {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            border-top: 1px solid var(--panel-border);
-            padding-top: 0.75rem;
-        }
-
-        /* SUZUVCHI AI CHATBOT OYNASI */
-        .chat-widget {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-
-        /* Chat ochish tugmasi */
-        .chat-toggle {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
-            box-shadow: 0 6px 20px var(--primary-glow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            position: relative;
-        }
-
-        .chat-toggle:hover {
-            transform: scale(1.1);
-        }
-
-        .chat-toggle .pulse {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: var(--primary);
-            opacity: 0.4;
-            animation: pulse-animation 2s infinite;
-            z-index: -1;
-        }
-
-        @keyframes pulse-animation {
-            0% { transform: scale(1); opacity: 0.4; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-
-        /* Chat oynasi */
-        .chat-window {
-            width: 380px;
-            height: 500px;
-            background: #110e24;
-            border: 1px solid var(--panel-border);
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            margin-bottom: 1rem;
-            transform: translateY(20px) scale(0.9);
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(20px);
-        }
-
-        .chat-window.active {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .chat-header {
-            background: linear-gradient(to right, #1a1635, #231d45);
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid var(--panel-border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chat-header-title {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #ffffff;
-        }
-
-        .chat-header-title i {
-            color: var(--secondary);
-        }
-
-        .chat-close-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: color 0.2s;
-        }
-
-        .chat-close-btn:hover {
-            color: #ffffff;
-        }
-
-        /* Xabarlar maydoni */
-        .chat-messages {
-            flex-grow: 1;
-            padding: 1.25rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            scroll-behavior: smooth;
-        }
-
-        /* Chat scrollbari */
-        .chat-messages::-webkit-scrollbar {
-            width: 5px;
-        }
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 0.75rem 1rem;
-            border-radius: 14px;
-            font-size: 0.85rem;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
-
-        .message-bot {
-            background: rgba(255, 255, 255, 0.05);
-            color: #e5e7eb;
-            align-self: flex-start;
-            border-bottom-left-radius: 2px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .message-user {
-            background: var(--primary);
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 2px;
-        }
-
-        /* Tezkor takliflar tugmalari */
-        .quick-suggestions {
-            padding: 0.5rem 1rem;
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            border-top: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .suggestion-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--panel-border);
-            color: #d1d5db;
-            padding: 0.35rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .suggestion-btn:hover {
-            background: rgba(139, 92, 246, 0.15);
-            border-color: var(--primary);
-            color: white;
-        }
-
-        /* Yozish/Yuborish qismi */
-        .chat-input-area {
-            padding: 1rem;
-            border-top: 1px solid var(--panel-border);
-            display: flex;
-            gap: 0.5rem;
-            background: #110e24;
-        }
-
-        .chat-input {
-            flex-grow: 1;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--panel-border);
-            padding: 0.65rem 1rem;
-            border-radius: 10px;
-            color: white;
-            font-family: var(--font);
-            font-size: 0.85rem;
-        }
-
-        .chat-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .chat-send-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .chat-send-btn:hover {
-            background: #7c3aed;
-        }
-
-        .typing-indicator {
-            display: inline-flex;
-            gap: 4px;
-            align-items: center;
-            padding: 4px 8px;
-        }
-
-        .typing-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--text-muted);
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out both;
-        }
-
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Sarlavha -->
-    <header>
-        <div class="logo">
-            <i class="fa-solid fa-graduation-cap"></i>
-            <span>SmartLibrary</span>
-        </div>
-        <div style="font-size: 0.85rem; color: var(--text-muted);">
-            <i class="fa-solid fa-robot" style="color: var(--secondary)"></i>
-        </div>
-    </header>
-
-    <!-- Asosiy Grid -->
-    <div class="container">
-        
-        <!-- Chap tomonda: Kitob qo'shish paneli -->
-        <div class="glass-panel" style="height: fit-content;">
-            <h2><i class="fa-solid fa-circle-plus"></i> Yangi Kitob Qo'shish</h2>
-            <form action="/add" method="POST">
-                <div class="form-group">
-                    <label for="title">Kitob Nomi</label>
-                    <input type="text" id="title" name="title" class="form-control" placeholder="Masalan: O'tgan kunlar" required>
-                </div>
-                <div class="form-group">
-                    <label for="author">Muallif</label>
-                    <input type="text" id="author" name="author" class="form-control" placeholder="Masalan: Abdulla Qodiriy" required>
-                </div>
-                <div class="form-group">
-                    <label for="genre">Janri</label>
-                    <input type="text" id="genre" name="genre" class="form-control" placeholder="Masalan: Tarixiy Roman" required>
-                </div>
-                <div class="form-group">
-                    <label for="description">Qisqacha Tavsifi</label>
-                    <textarea id="description" name="description" class="form-control" placeholder="Kitob syujeti va mantiqiy mazmuni haqida..." required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-paper-plane"></i> Baza Fayliga Qo'shish
-                </button>
-            </form>
-        </div>
-
-        <!-- O'ng tomonda: Kitoblar ro'yxati -->
-        <div class="glass-panel">
-            <h2><i class="fa-solid fa-book-open"></i> Mavjud Kitoblar Ro'yxati</h2>
-            
-            {% if not books %}
-                <div style="text-align: center; color: var(--text-muted); padding: 3rem 0;">
-                    <i class="fa-solid fa-book" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
-                    <p>Hozircha kutubxonada kitoblar yo'q. Chap tarafdagi forma orqali qo'shing!</p>
-                </div>
-            {% else %}
-                <div class="books-grid">
-                    {% for book in books %}
-                        <div class="book-card">
-                            <!-- Ovozli o'qish tugmasi -->
-                            <a href="/read/{{ book.id }}" style="display:inline-block; background:#03dac6; color:#121212; padding:10px 15px; border-radius:4px; text-decoration:none; font-weight:bold; margin-top:10px; margin-left:10px;">📖 Kitobni o'qish</a>
-
-
-                        <button class="btn-read" onclick="readAloud('{{ book.title }}. {{ book.description }}')">
-                            🎧 Kitobni tinglash
-                        </button>
-
-                            <span class="book-genre">{{ book.genre }}</span>
-                            <div class="book-title">{{ book.title }}</div>
-                            <div class="book-author"><i class="fa-regular fa-user"></i> {{ book.author }}</div>
-                            <div class="book-desc">{{ book.description }}</div>
-                            <div class="book-footer">
-                                <form action="/delete/{{ book.id }}" method="POST" onsubmit="return confirm('Kitobni o\'chirishni xohlaysizmi?')">
-                                    <button type="submit" class="btn-danger-icon" title="O'chirish">
-                                        <i class="fa-solid fa-trash-can"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- AI CHATBOT UI -->
-    <div class="chat-widget">
-        <!-- Chat Oynasi -->
-        <div class="chat-window" id="chatWindow">
-            <div class="chat-header">
-                <div class="chat-header-title">
-                    <i class="fa-solid fa-robot"></i>
-                    <span>Kutubxona Yordamchisi (AI)</span>
-                </div>
-                <button class="chat-close-btn" onclick="toggleChat()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            
-            <!-- Xabarlar maydoni -->
-            <div class="chat-messages" id="chatMessages">
-                <div class="message message-bot">
-                    Assalomu alaykum! Men kutubxona AI yordamchisiman. Bazadagi kitoblar asosida sizga tavsiyalar bera olaman. Masalan, mendan "Menga tarixiy asar topib ber" deb so'rab ko'ring!
-                </div>
-            </div>
-
-            <!-- Tezkor takliflar -->
-            <div class="quick-suggestions">
-                <button class="suggestion-btn" onclick="sendQuickMessage('Menga tarixiy kitob tavsiya et')">Tarixiy kitoblar</button>
-                <button class="suggestion-btn" onclick="sendQuickMessage('Falsafiy yoki ertak tabiatli asar bormi?')">Falsafiy/Ertak</button>
-                <button class="suggestion-btn" onclick="sendQuickMessage('Barcha kitoblar ro\'yxati')">Barcha kitoblar</button>
-            </div>
-
-            <!-- Yozish qismi -->
-            <div class="chat-input-area">
-                <input type="text" id="chatInput" class="chat-input" placeholder="Xabaringizni yozing..." onkeypress="handleKeyPress(event)">
-                <button class="chat-send-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
-            </div>
-        </div>
-
-        <!-- Chatni ochish tugmasi -->
-        <button class="chat-toggle" onclick="toggleChat()">
-            <div class="pulse"></div>
-            <i class="fa-solid fa-comments"></i>
-        </button>
-    </div>
-
-    <script>
-        // Chat oynasini ko'rsatish/yashirish
-        function toggleChat() {
-            const chatWindow = document.getElementById('chatWindow');
-            chatWindow.classList.toggle('active');
-            if (chatWindow.classList.contains('active')) {
-                document.getElementById('chatInput').focus();
-            }
-        }
-
-        // Enter tugmasini bosganda xabar yuborish
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
-        // Tezkor taklif tugmalarini bosganda xabar yuborish
-        function sendQuickMessage(text) {
-            document.getElementById('chatInput').value = text;
-            sendMessage();
-        }
-
-        // Xabar matnini formatlash (Markdown formatidagi ** va yangi qatorlarni chiroyli qilish)
-        function formatMessageText(text) {
-            // Qalin yozuvlar: **matn** -> <strong>matn</strong>
-            let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            // Yangi qatorlar: \n -> <br>
-            formatted = formatted.replace(/\n/g, '<br>');
-            return formatted;
-        }
-
-        // Xabar yuborish logikasi
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const messageText = input.value.trim();
-            if (!messageText) return;
-
-            const chatMessages = document.getElementById('chatMessages');
-
-            // 1. Foydalanuvchi xabarini ekranga chiqarish
-            const userDiv = document.createElement('div');
-            userDiv.className = 'message message-user';
-            userDiv.textContent = messageText;
-            chatMessages.appendChild(userDiv);
-
-            // Inputni tozalash
-            input.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // 2. AI yozayotganini ko'rsatish (Typing Indicator)
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message message-bot';
-            typingDiv.id = 'typingIndicator';
-            typingDiv.innerHTML = `
-                <div class="typing-indicator">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-            `;
-            chatMessages.appendChild(typingDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // 3. Flask backendga AJAX so'rov yuborish
-            fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: messageText })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Yozish indikatorini o'chirish
-                const indicator = document.getElementById('typingIndicator');
-                if (indicator) indicator.remove();
-
-                // AI javobini chiqarish
-                const botDiv = document.createElement('div');
-                botDiv.className = 'message message-bot';
-                botDiv.innerHTML = formatMessageText(data.reply);
-                chatMessages.appendChild(botDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            })
-            .catch(error => {
-                console.error('Xatolik yuz berdi:', error);
-                const indicator = document.getElementById('typingIndicator');
-                if (indicator) indicator.remove();
-
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'message message-bot';
-                errorDiv.style.color = '#ef4444';
-                errorDiv.textContent = 'Uzr, server bilan aloqa o\'rnatib bo\'lmadi.';
-                chatMessages.appendChild(errorDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            });
-        }
-    </script>
-
-    <script>
+    <!-- 📖 Kitobni o'qish tugmasi -->
+    <a href="/read/{{ book.id }}" class="btn-action btn-read-online">
+        <span class="icon">📖</span> Kitobni o'qish
+    </a>
+
+    <!-- 🎧 Kitobni tinglash tugmasi -->
+    <button class="btn-action btn-listen" onclick="readAloud('{{ book.title }}. {{ book.description }}')">
+        <span class="icon">🎧</span> Kitobni tinglash
+    </button>
+    
+</div>
+
+<!-- CHIROYLI NEON ANIMATSIYALAR UCHUN CSS STYLES (Faylning <head> qismiga qo'shing) -->
+<style>
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 30px;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-read-online {
+    background: linear-gradient(135deg, #03dac6, #018786);
+    color: #121212;
+}
+
+.btn-read-online:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(3, 218, 198, 0.6);
+}
+
+.btn-listen {
+    background: linear-gradient(135deg, #bb86fc, #6200ee);
+    color: #ffffff;
+}
+
+.btn-listen:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(187, 134, 252, 0.6);
+}
+
+.btn-action:hover .icon {
+    animation: pulseIcon 0.8s infinite alternate;
+}
+
+@keyframes pulseIcon {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.3); }
+}
+</style>
+
+<!-- OVOZLI O'QISH JAVASCRIPT KODI (Faylning eng pastiga, </body>dan tepaga qo'shing) -->
+<script>
 function readAloud(text) {
-    // Agar ovoz tizimi band bo'lsa yoki qotib qolgan bo'lsa, to'xtatib qayta uyg'otamiz
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
         window.speechSynthesis.cancel();
     }
-
-    // Google Chrome xavfsizlik cheklovidan (Autoplay) o'tish uchun majburiy uyg'otish
     window.speechSynthesis.resume();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Tizim ovozini sozlash
     utterance.lang = 'uz-UZ'; 
     utterance.pitch = 1.0; 
-    utterance.rate = 0.95; // Bir oz sekinroq, chiroyli o'qishi uchun
+    utterance.rate = 0.95; 
 
-    // Agar brauzerda sof o'zbekcha ovoz topilmasa, xatolik bermasligi uchun muqobil ovoz tanlash
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
-        // O'zbekcha yoki eng yaqin ovozni qidirish
         const uzVoice = voices.find(v => v.lang.includes('uz') || v.lang.includes('tr'));
         if (uzVoice) utterance.voice = uzVoice;
     }
-
-    // Ovoz berish buyrug'i
     window.speechSynthesis.speak(utterance);
 }
-
-// Brauzer keshida ovozlar ro'yxatini oldindan yuklab qo'yish (Chrome uchun muhim)
 if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
     speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
 }
 </script>
-
-
-
-</body>
-</html>
