@@ -2,11 +2,9 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import sqlite3
 import os
-import zipfile
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# .env faylini yuklash
 dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
 load_dotenv(dotenv_path)
 
@@ -14,7 +12,6 @@ gemini_key = os.getenv("GEMINI_API_KEY")
 
 app = Flask(__name__)
 
-# CHUNKI 2026-YILDA ENG SO'NGGI MUSTAHKAM VA TEKIN MODEL: gemini-2.5-flash-lite
 if gemini_key:
     genai.configure(api_key=gemini_key)
     model = genai.GenerativeModel('gemini-2.5-flash-lite')
@@ -46,54 +43,30 @@ def read_book(book_id):
         return "Kitob topilmadi", 404
     return render_template('read.html', book=book)
 
-# KATTA FILERLARDA QOTIB QOLMAYDIGAN OPTIMALLASHTIRILGAN ZIP YUKLASH TIZIMI
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
-    conn = get_db_connection()
-    
     if request.method == 'POST':
-        zip_file = request.files.get('zip_file')
-        if zip_file and zip_file.filename.endswith('.zip'):
-            # Faylni vaqtincha xavfsiz va tez saqlab olish
-            temp_path = "temp_upload.zip"
-            zip_file.save(temp_path)
-            
-            # Arxivni ochish va xotirani band qilmasdan oqim bilan bazaga yozish
-            with zipfile.ZipFile(temp_path) as archive:
-                for file_name in archive.namelist():
-                    if file_name.endswith('.txt') and not file_name.startswith('__MACOSX'):
-                        with archive.open(file_name) as f:
-                            content = f.read().decode('utf-8')
-                            clean_name = file_name.replace('.txt', '')
-                            if " - " in clean_name:
-                                b_title, b_author = clean_name.split(" - ", 1)
-                            else:
-                                b_title, b_author = clean_name, "Noma'lum muallif"
-                                
-                            conn.execute(
-                                'INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)',
-                                (b_title.strip(), b_author.strip(), "Elektron Kitob", "Ommaviy yuklangan mukammal asar.", content)
-                            )
-                conn.commit()
-            
-            # Server xotirasi to'lib qolmasligi uchun vaqtincha arxiv faylni darhol o'chiramiz
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
-                
-        conn.close()
-        return redirect(url_for('admin_panel'))
+        # Brauzerdan kelgan tayyor kitob ma'lumotlarini qabul qilish
+        data = request.json
+        if data and 'books' in data:
+            conn = get_db_connection()
+            for book in data['books']:
+                conn.execute(
+                    'INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)',
+                    (book['title'], book['author'], book['genre'], book['description'], book['content'])
+                )
+            conn.commit()
+            conn.close()
+            return jsonify({"status": "success", "message": f"{len(data['books'])} ta kitob muvaffaqiyatli qo'shildi!"})
+        return jsonify({"status": "error", "message": "Ma'lumot topilmadi"}), 400
 
-    books = conn.execute('SELECT * FROM books ORDER BY id DESC').fetchall()
-    conn.close()
-    return render_template('admin.html', books=books)
+    return render_template('admin.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
     if not model:
         return jsonify({"reply": "Xatolik: Gemini API kaliti sozlanmagan."})
-        
     user_message = request.json.get('message')
-    
     conn = get_db_connection()
     books = conn.execute('SELECT title, author, genre, description FROM books').fetchall()
     conn.close()

@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Kutubxona - VIP Admin Panel</title>
+    <!-- Brauzerda ZIP ochish uchun eng kuchli kutubxona -->
+    <script src="https://cloudflare.com"></script>
     <style>
         body { background: #0f0f15; color: #fff; font-family: sans-serif; padding: 40px; display: flex; justify-content: center; align-items: center; min-height: 80vh; }
         .admin-box { max-width: 600px; width: 100%; background: #161622; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #232335; text-align: center; }
@@ -12,34 +14,109 @@
         .upload-area:hover { background: #25253b; border-color: #03dac6; }
         .file-input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         .upload-icon { font-size: 60px; margin-bottom: 15px; display: inline-block; animation: float 3s infinite ease-in-out; }
-        button { width: 100%; background: linear-gradient(135deg, #bb86fc, #6200ee); color: #fff; padding: 16px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; margin-top: 25px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(187, 134, 252, 0.4); }
+        button { width: 100%; background: linear-gradient(135deg, #bb86fc, #6200ee); color: #fff; padding: 16px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; margin-top: 25px; cursor: pointer; transition: all 0.3s; }
         button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(187, 134, 252, 0.6); }
         .btn-back { display: inline-block; color: #03dac6; text-decoration: none; font-size: 14px; margin-bottom: 20px; font-weight: bold; }
+        .progress-container { display: none; margin-top: 20px; background: #1e1e2f; border-radius: 10px; padding: 5px; border: 1px solid #232335; }
+        .progress-bar { width: 0%; height: 15px; background: linear-gradient(90deg, #03dac6, #bb86fc); border-radius: 8px; transition: width 0.2s; }
+        #status-lbl { margin-top: 10px; color: #03dac6; font-weight: bold; font-size: 14px; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
     </style>
 </head>
 <body>
     <div class="admin-box">
         <a href="/" class="btn-back">← Bosh sahifaga qaytish</a>
-        <h1>📦 Ommaviy Kutubxona Yuklagichi</h1>
-        <p>Kitoblarni bittalab qo'shib o'tirmang! Hammasini `.txt` qilib bitta `.zip` arxivga joylang va shu yerga yuklang.</p>
+        <h1>📦 Tezkor Ommaviy Yuklagich</h1>
+        <p>Ushbu tizim arxivni kompyuteringizni o'zida ochadi va Render serverini mutlaqo qotirmasdan bir necha soniyada kitoblarni bazaga yuklaydi!</p>
         
-        <form method="POST" enctype="multipart/form-data">
-            <div class="upload-area">
-                <span class="upload-icon">🚀</span>
-                <h3 id="file-label">ZIP faylni tanlang yoki shu yerga tashlang</h3>
-                <span style="color: #6c6c80; font-size: 12px; display:block; margin-top:10px;">Format: Kitob_Nomi - Muallif.txt</span>
-                <input type="file" name="zip_file" class="file-input" accept=".zip" required onchange="updateLabel(this)">
-            </div>
-            <button type="submit">📚 Hamma kitoblarni bazaga yuklash</button>
-        </form>
+        <div class="upload-area">
+            <span class="upload-icon">🚀</span>
+            <h3 id="file-label">ZIP faylni tanlang yoki shu yerga tashlang</h3>
+            <span style="color: #6c6c80; font-size: 12px; display:block; margin-top:10px;">Format: Kitob_Nomi - Muallif.txt</span>
+            <input type="file" id="zip-file-input" class="file-input" accept=".zip" onchange="processZip(this)">
+        </div>
+
+        <div class="progress-container" id="progress-area">
+            <div class="progress-bar" id="p-bar"></div>
+        </div>
+        <div id="status-lbl"></div>
     </div>
 
     <script>
-    function updateLabel(input) {
-        if(input.files.length > 0) {
-            document.getElementById('file-label').innerText = "📂 Tanlandi: " + input.files[0].name;
-            document.getElementById('file-label').style.color = "#03dac6";
+    async function processZip(input) {
+        if (input.files.length === 0) return;
+        
+        const file = input.files[0];
+        document.getElementById('file-label').innerText = "📂 Tanlandi: " + file.name;
+        document.getElementById('file-label').style.color = "#03dac6";
+        
+        const progressArea = document.getElementById('progress-area');
+        const pBar = document.getElementById('p-bar');
+        const statusLbl = document.getElementById('status-lbl');
+        
+        progressArea.style.display = "block";
+        statusLbl.innerText = "🔍 Arxiv kompyuterda ochilmoqda...";
+        pBar.style.width = "20%";
+
+        const jszip = new JSZip();
+        try {
+            // ZIP arxivini brauzer xotirasida ochish
+            const zip = await jszip.loadAsync(file);
+            const booksToUpload = [];
+
+            pBar.style.width = "40%";
+            statusLbl.innerText = "📖 Kitob matnlari o'qilmoqda...";
+
+            for (let filename in zip.files) {
+                if (filename.endsWith('.txt') && !filename.startsWith('__MACOSX')) {
+                    const content = await zip.files[filename].async("string");
+                    let cleanName = filename.replace('.txt', '');
+                    let title = cleanName;
+                    let author = "Noma'lum muallif";
+                    
+                    if (cleanName.includes(" - ")) {
+                        const parts = cleanName.split(" - ");
+                        title = parts[0];
+                        author = parts[1];
+                    }
+
+                    booksToUpload.append({
+                        title: title.trim(),
+                        author: author.trim(),
+                        genre: "Elektron Kitob",
+                        description: "Ommaviy yuklangan mukammal asar.",
+                        content: content
+                    });
+                }
+            }
+
+            if (booksToUpload.length === 0) {
+                statusLbl.innerText = "❌ Arxiv ichida .txt formatdagi kitoblar topilmadi!";
+                statusLbl.style.color = "#cf6679";
+                return;
+            }
+
+            pBar.style.width = "70%";
+            statusLbl.innerText = `⚡ ${booksToUpload.length} ta kitob Render serveriga xavfsiz uzatilmoqda...`;
+
+            // Serverga JSON ko'rinishida yengil yuborish
+            const response = await fetch('/admin', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({books: booksToUpload})
+            });
+
+            if (response.ok) {
+                pBar.style.width = "100%";
+                statusLbl.innerText = `🎉 Muvaffaqiyatli yakunlandi! barcha kitoblar bazaga yuklandi.`;
+                statusLbl.style.color = "#03dac6";
+            } else {
+                throw new Error("Server xatosi");
+            }
+
+        } catch (err) {
+            statusLbl.innerText = "❌ Yuklashda xatolik yuz berdi. Arxiv shikastlangan bo'lishi mumkin.";
+            statusLbl.style.color = "#cf6679";
         }
     }
     </script>
