@@ -517,7 +517,7 @@
             <span>SmartLibrary</span>
         </div>
         <div style="font-size: 0.85rem; color: var(--text-muted);">
-            <i class="fa-solid fa-robot" style="color: var(--secondary)"></i> AI Integratsiyasi
+            <i class="fa-solid fa-robot" style="color: var(--secondary)"></i>
         </div>
     </header>
 
@@ -563,6 +563,11 @@
                 <div class="books-grid">
                     {% for book in books %}
                         <div class="book-card">
+                            <!-- Ovozli o'qish tugmasi -->
+                        <button class="btn-read" onclick="readAloud('{{ book.title }}. {{ book.description }}')">
+                            🎧 Kitobni tinglash
+                        </button>
+
                             <span class="book-genre">{{ book.genre }}</span>
                             <div class="book-title">{{ book.title }}</div>
                             <div class="book-author"><i class="fa-regular fa-user"></i> {{ book.author }}</div>
@@ -720,5 +725,21 @@
             });
         }
     </script>
+
+    <script>
+    function readAloud(text) {
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            return;
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'uz-UZ'; 
+        utterance.pitch = 1.0; 
+        utterance.rate = 1.0;  
+        window.speechSynthesis.speak(utterance);
+    }
+    </script>
+
+
 </body>
 </html>
