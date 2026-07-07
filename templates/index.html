@@ -727,18 +727,40 @@
     </script>
 
     <script>
-    function readAloud(text) {
-        if (window.speechSynthesis.speaking) {
-            window.speechSynthesis.cancel();
-            return;
-        }
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'uz-UZ'; 
-        utterance.pitch = 1.0; 
-        utterance.rate = 1.0;  
-        window.speechSynthesis.speak(utterance);
+function readAloud(text) {
+    // Agar ovoz tizimi band bo'lsa yoki qotib qolgan bo'lsa, to'xtatib qayta uyg'otamiz
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+        window.speechSynthesis.cancel();
     }
-    </script>
+
+    // Google Chrome xavfsizlik cheklovidan (Autoplay) o'tish uchun majburiy uyg'otish
+    window.speechSynthesis.resume();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Tizim ovozini sozlash
+    utterance.lang = 'uz-UZ'; 
+    utterance.pitch = 1.0; 
+    utterance.rate = 0.95; // Bir oz sekinroq, chiroyli o'qishi uchun
+
+    // Agar brauzerda sof o'zbekcha ovoz topilmasa, xatolik bermasligi uchun muqobil ovoz tanlash
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+        // O'zbekcha yoki eng yaqin ovozni qidirish
+        const uzVoice = voices.find(v => v.lang.includes('uz') || v.lang.includes('tr'));
+        if (uzVoice) utterance.voice = uzVoice;
+    }
+
+    // Ovoz berish buyrug'i
+    window.speechSynthesis.speak(utterance);
+}
+
+// Brauzer keshida ovozlar ro'yxatini oldindan yuklab qo'yish (Chrome uchun muhim)
+if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+}
+</script>
+
 
 
 </body>
