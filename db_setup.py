@@ -22,15 +22,18 @@ def init_db():
     # author: muallif ismi
     # genre: kitob janri (masalan: Roman, Ertak, Fantastika)
     # description: kitob haqida qisqacha ma'lumot
+    # db_setup.py ichidagi jadval yaratish qismi
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS books (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            author TEXT NOT NULL,
-            genre TEXT NOT NULL,
-            description TEXT NOT NULL
-        )
+    CREATE TABLE IF NOT EXISTS books (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT EXISTS,
+        author TEXT,
+        genre TEXT,
+        description TEXT,
+        content TEXT  -- Kitobning to'liq o'qiladigan matni shu yerda saqlanadi
+    )
     ''')
+
     
     # AI chatbot tahlil qilishi uchun boshlang'ich namunaviy kitoblar ro'yxati
     sample_books = [

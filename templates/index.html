@@ -564,6 +564,9 @@
                     {% for book in books %}
                         <div class="book-card">
                             <!-- Ovozli o'qish tugmasi -->
+                            <a href="/read/{{ book.id }}" style="display:inline-block; background:#03dac6; color:#121212; padding:10px 15px; border-radius:4px; text-decoration:none; font-weight:bold; margin-top:10px; margin-left:10px;">📖 Kitobni o'qish</a>
+
+
                         <button class="btn-read" onclick="readAloud('{{ book.title }}. {{ book.description }}')">
                             🎧 Kitobni tinglash
                         </button>

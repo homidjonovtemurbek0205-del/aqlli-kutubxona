@@ -227,3 +227,13 @@ if __name__ == '__main__':
         init_db() # Ma'lumotlar bazasini noldan qurish funksiyasi
 
     app.run(debug=True)
+
+# app.py eng pastiga qo'shing
+@app.route('/read/<int:book_id>')
+def read_book(book_id):
+    conn = get_db_connection()
+    book = conn.execute('SELECT * FROM books WHERE id = ?', (book_id,)).fetchone()
+    conn.close()
+    if book is None:
+        return "Kitob topilmadi", 404
+    return render_template('read.html', book=book)
