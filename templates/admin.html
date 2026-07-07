@@ -23,10 +23,19 @@
         <h1>📚 Kutubxona boshqaruv paneli</h1>
         
         <!-- Kitob qo'shish formasi -->
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             <h2>Yangi kitob qo'shish</h2>
+            <!-- admin.html formasi ichiga qo'shing -->
+            <div style="margin-top: 20px; border-top: 1px dashed #444; padding-top: 20px;">
+                <h3>📦 Ko'p kitoblarni bittada yuklash (ZIP arxiv)</h3>
+                <p style="color: #a0a0a0; font-size: 14px;">Kitoblarni .txt formatida tayyorlab, hammasini bitta .zip arxivga joylang. Har bir fayl nomi 'Kitob_Nomi - Muallif.txt' ko'rinishida bo'lsin.</p>
+                <input type="file" name="zip_file" accept=".zip">
+            </div>
+
             <!-- admin.html ichidagi formaga qo'shing -->
-            <textarea name="content" placeholder="Kitobning TO'LIQ matnini (hamma boblarini) shu yerga joylashtiring..." rows="10" required></textarea>
+            <!-- admin.html ichidagi formaga qo'shing -->
+            <label style="display:block; margin:10px 0; color:#bb86fc;">Kitob faylini yuklang (.txt formatda):</label>
+            <input type="file" name="book_file" accept=".txt" required>
             <input type="text" name="title" placeholder="Kitob nomi" required>
             <input type="text" name="author" placeholder="Muallif" required>
             <input type="text" name="genre" placeholder="Janri (masalan: Roman, Tarixiy)">

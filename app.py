@@ -1,234 +1,50 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 import sqlite3
 import os
+import zipfile
+import google.generativeai as genai
 from dotenv import load_dotenv
 
-# .env faylini absolyut yo'l orqali yuklash (qayerdan chaqirilishidan qat'i nazar ishlashi uchun)
+# .env faylini yuklash
 dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
 load_dotenv(dotenv_path)
 
-# Ma'lumotlar bazasi yo'q bo'lsa, avtomat yaratish mantiqi
-import os
-from db_setup import init_db  # Agar sizda funksiya nomi boshqacha bo'lsa, o'shani yozing
+gemini_key = os.getenv("GEMINI_API_KEY")
 
-# Har safar sayt ishga tushganda bazani tekshiradi
-if not os.path.exists('library.db'):
-    print("[*] Ma'lumotlar bazasi topilmadi. Yangi baza yaratilmoqda...")
-    init_db()
-    print("[*] Ma'lumotlar bazasi muvaffaqiyatli yaratildi va namunaviy kitoblar yuklandi.")
-
-
-print(f"[*] Tizim sozlamalari yuklanmoqda... .env fayli: {dotenv_path}")
-print(f"[*] GEMINI_API_KEY yuklandimi: {bool(os.getenv('GEMINI_API_KEY'))}")
+# Tizim sozlamalari yuklanmoqda
+print("[*] Tizim sozlamalari yuklanmoqda...")
+print(f"[*] GEMINI_API_KEY yuklandimi: {bool(gemini_key)}")
 
 app = Flask(__name__)
 
+# Gemini API sozlamalari
+if gemini_key:
+    genai.configure(api_key=gemini_key)
+    # Bevosita bepul va barqaror modelni tanlaymiz
+    model = genai.GenerativeModel('gemini-1.5-flash')
+else:
+    model = None
+
 def get_db_connection():
-    # SQLite bazasi bilan aloqa o'rnatish
     conn = sqlite3.connect('library.db')
-    conn.row_factory = sqlite3.Row  # Qatorlarni lug'at (dict) formatida qaytarish uchun
+    conn.row_factory = sqlite3.Row
     return conn
 
-def get_ai_response(user_query, books_list):
-    """
-    Foydalanuvchining so'rovi (query) va bazadagi kitoblar ro'yxatini (books_list) oladi.
-    Tizimda API kalit borligiga qarab mos API orqali javob oladi, 
-    agar kalit bo'lmasa, mahalliy matnli qidiruv algoritmi (fallback) yordamida javob beradi.
-    """
-    # Atrof-muhit o'zgaruvchilaridan kalitlarni olish
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    openai_key = os.getenv("OPENAI_API_KEY")
-    
-    # Bazadagi kitoblar ro'yxatidan AI tushunadigan matnli kontekst tayyorlash
-    books_context = "Kutubxonamizdagi mavjud kitoblar ro'yxati:\n"
-    for book in books_list:
-        books_context += f"- ID: {book['id']}, Nomi: \"{book['title']}\", Muallifi: {book['author']}, Janri: {book['genre']}. Tavsif: {book['description']}\n"
-    
-    # AI ga qanday rol o'ynashini tushuntiruvchi yo'riqnoma (System Prompt)
-    system_prompt = (
-        "Siz aqlli kutubxona chatbotisiz. Foydalanuvchiga faqat yuqorida keltirilgan kitoblar ro'yxatidan "
-        "tavsiyalar bering. Agar foydalanuvchi so'ragan janr yoki mavzudagi kitob topilmasa, bazada yo'qligini ayting "
-        "va o'rniga boshqa mavjud kitoblardan mosini tavsiya qiling. Javoblaringiz samimiy va chiroyli o'zbek tilida bo'lsin. "
-        "Tanlangan kitoblarni nima uchun tavsiya qilayotganingizni bazadagi tavsifidan kelib chiqib qisqa tushuntiring."
-    )
-    
-    # Hujjat tuzilishi
-    full_prompt = f"{system_prompt}\n\n{books_context}\n\nFoydalanuvchi savoli: {user_query}"
+# Ma'lumotlar bazasi yo'q bo'lsa, avtomat yaratish mantiqi
+if not os.path.exists('library.db'):
+    print("[*] Ma'lumotlar bazasi topilmadi. Yangi baza yaratilmoqda...")
+    from db_setup import init_db
+    init_db()
+    print("[*] Ma'lumotlar bazasi muvaffaqiyatli yaratildi.")
 
-    # 1. Google Gemini API ni tekshirish va ishlatish
-    if gemini_key:
-        try:
-            import google.generativeai as genai
-            from google.api_core.client_options import ClientOptions
-            
-            # API versiyasini 'v1' va endpointni generativelanguage.googleapis.com qilib sozlash
-            genai.configure(api_key=gemini_key)
-            
-            # Barqaror va eng so'nggi Gemini modelini yuklash (gemini-2.5-flash)
-            model = genai.GenerativeModel('gemini-3.5-flash')
-            
-            # AI orqali javob matnini yaratish
-            response = model.generate_content(full_prompt)
-            return response.text
-        except Exception as e:
-            return f"Google Gemini API bilan bog'lanishda xatolik: {str(e)}"
-
-    # 2. OpenAI API ni tekshirish va ishlatish (Agar Gemini kaliti yo'q, lekin OpenAI bo'lsa)
-    elif openai_key:
-        try:
-            from openai import OpenAI
-            client = OpenAI(api_key=openai_key)
-            
-            messages = [
-                {"role": "system", "content": f"{system_prompt}\n\n{books_context}"},
-                {"role": "user", "content": user_query}
-            ]
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                max_tokens=600
-            )
-            return response.choices[0].message.content
-        except Exception as e:
-            return f"OpenAI API bilan bog'lanishda xatolik: {str(e)}"
-            
-    # 3. Mahalliy Algoritm (Agar hech qanday API kalit kiritilmagan bo'lsa - Crash bo'lmasligi uchun)
-    else:
-        q = user_query.lower()
-        recommendations = []
-        
-        # Oddiy kalit so'zlar bo'yicha qidiruv logikasi
-        for book in books_list:
-            title = book['title'].lower()
-            author = book['author'].lower()
-            genre = book['genre'].lower()
-            desc = book['description'].lower()
-            
-            # Agar foydalanuvchi yozgan so'z kitob tafsilotlarida uchrsa
-            if q in title or q in author or q in genre or q in desc or \
-               ("tarix" in q and "tarix" in genre) or \
-               ("ertak" in q and "ertak" in genre) or \
-               ("roman" in q and "roman" in genre) or \
-               ("fantastika" in q and "fantastika" in genre):
-                recommendations.append(book)
-        
-        # Foydalanuvchiga API kalitni sozlash kerakligi haqida ogohlantirish beramiz
-        warning_msg = (
-            "(⚠️ Eslatma: Gemini API kaliti sozlanmagan. To'liq AI tavsiyalarini ko'rish uchun "
-            "loyiha papkasidagi '.env' fayliga 'GEMINI_API_KEY=API_KALIT' deb yozib qo'ying.)\n\n"
-        )
-        
-        if recommendations:
-            res = warning_msg + "Mahalliy qidiruv natijasida quyidagi kitoblar topildi:\n"
-            for b in recommendations:
-                res += f"\n📖 **{b['title']}** ({b['author']}) - Janri: {b['genre']}\nTavsif: {b['description']}\n"
-            return res
-        else:
-            res = warning_msg + "Kutubxonada siz aytgan mavzuga oid mos kitob topilmadi. Hozircha quyidagilar mavjud:\n"
-            for b in books_list:
-                res += f"- **{b['title']}** (Muallif: {b['author']}, Janri: {b['genre']})\n"
-            return res
-
-# 1. BOSH SAHIFA: Kitoblar ro'yxatini chiqarish
 @app.route('/')
 def index():
     conn = get_db_connection()
-    # Barcha kitoblarni bazadan tartib bilan o'qib olish
     books = conn.execute('SELECT * FROM books ORDER BY id DESC').fetchall()
     conn.close()
-    # HTML shablonga kitoblar ma'lumotini uzatish
     return render_template('index.html', books=books)
 
-# 2. KITOB QO'SHISH ROUTE: Post so'rovini qabul qiladi
-@app.route('/add', methods=['POST'])
-def add_book():
-    title = request.form.get('title')
-    author = request.form.get('author')
-    genre = request.form.get('genre')
-    description = request.form.get('description')
-    
-    # Maydonlar bo'sh emasligini tekshiramiz
-    if title and author and genre and description:
-        conn = get_db_connection()
-        conn.execute('INSERT INTO books (title, author, genre, description) VALUES (?, ?, ?, ?)',
-                     (title, author, genre, description))
-        conn.commit()
-        conn.close()
-        
-    return redirect('/')
-
-# 3. KITOB O'CHIRISH ROUTE: Baza jadvalidan ID bo'yicha o'chirish
-@app.route('/delete/<int:book_id>', methods=['POST'])
-def delete_book(book_id):
-    conn = get_db_connection()
-    conn.execute('DELETE FROM books WHERE id = ?', (book_id,))
-    conn.commit()
-    conn.close()
-    return redirect('/')
-
-# 4. CHAT ROUTE: AJAX so'rovlariga JSON javob beradi
-@app.route('/chat', methods=['POST'])
-def chat():
-    data = request.get_json()
-    user_message = data.get('message', '')
-    
-    # Bazadagi kitoblarni olish
-    conn = get_db_connection()
-    books = conn.execute('SELECT * FROM books').fetchall()
-    conn.close()
-    
-    # AI funksiyasini chaqirish
-    ai_reply = get_ai_response(user_message, books)
-    
-    return jsonify({"reply": ai_reply})
-
-from flask import url_for # Agar fayl tepasida url_for bo'lmasa, buni qoldiring
-
-@app.route('/admin', methods=['GET', 'POST'])
-def admin_panel():
-    conn = get_db_connection()
-    
-    # Forma yuborilganda (Yangi kitob qo'shish)
-    if request.method == 'POST':
-        title = request.form['title']
-        author = request.form['author']
-        genre = request.form['genre']
-        description = request.form['description']
-        
-        if title and author:
-            conn.execute(
-                'INSERT INTO books (title, author, genre, description) VALUES (?, ?, ?, ?)',
-                (title, author, genre, description)
-            )
-            conn.commit()
-            conn.close()
-            return redirect(url_for('admin_panel'))
-            
-    # Kitob o'chirish jarayoni
-    elif request.args.get('delete'):
-        book_id = request.args.get('delete')
-        conn.execute('DELETE FROM books WHERE id = ?', (book_id,))
-        conn.commit()
-        conn.close()
-        return redirect(url_for('admin_panel'))
-
-    # Mavjud kitoblarni listga chiqarish
-    books = conn.execute('SELECT * FROM books ORDER BY id DESC').fetchall()
-    conn.close()
-    return render_template('admin.html', books=books)
-
-# Flask ilovasini localhost (127.0.0.1) port 5000 da ishga tushiramiz
-if __name__ == '__main__':
-    # Agar baza bo'lmasa, avtomat yaratish mantiqi
-    import os
-    if not os.path.exists('library.db'):
-        from db_setup import init_db
-        init_db() # Ma'lumotlar bazasini noldan qurish funksiyasi
-
-    app.run(debug=True)
-
-# app.py eng pastiga qo'shing
 @app.route('/read/<int:book_id>')
 def read_book(book_id):
     conn = get_db_connection()
@@ -237,3 +53,85 @@ def read_book(book_id):
     if book is None:
         return "Kitob topilmadi", 404
     return render_template('read.html', book=book)
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_panel():
+    conn = get_db_connection()
+    
+    if request.method == 'POST':
+        # 1. Bittalik kitob yuklash
+        title = request.form.get('title')
+        author = request.form.get('author')
+        genre = request.form.get('genre', 'Badiiy')
+        description = request.form.get('description', '')
+        file = request.files.get('book_file')
+        
+        if title and author and file and file.filename.endswith('.txt'):
+            content = file.read().decode('utf-8')
+            conn.execute(
+                'INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)',
+                (title, author, genre, description, content)
+            )
+            conn.commit()
+
+        # 2. Ommaviy yuklash (ZIP ARXIV)
+        zip_file = request.files.get('zip_file')
+        if zip_file and zip_file.filename.endswith('.zip'):
+            with zipfile.ZipFile(zip_file) as archive:
+                for file_name in archive.namelist():
+                    if file_name.endswith('.txt') and not file_name.startswith('__MACOSX'):
+                        with archive.open(file_name) as f:
+                            content = f.read().decode('utf-8')
+                            clean_name = file_name.replace('.txt', '')
+                            if " - " in clean_name:
+                                b_title, b_author = clean_name.split(" - ", 1)
+                            else:
+                                b_title, b_author = clean_name, "Noma'lum muallif"
+                                
+                            conn.execute(
+                                'INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)',
+                                (b_title.strip(), b_author.strip(), "Elektron Kitob", "Ommaviy yuklangan asar.", content)
+                            )
+                conn.commit()
+                
+        conn.close()
+        return redirect(url_for('admin_panel'))
+        
+    elif request.args.get('delete'):
+        book_id = request.args.get('delete')
+        conn.execute('DELETE FROM books WHERE id = ?', (book_id,))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('admin_panel'))
+
+    books = conn.execute('SELECT * FROM books ORDER BY id DESC').fetchall()
+    conn.close()
+    return render_template('admin.html', books=books)
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    if not model:
+        return jsonify({"reply": "Xatolik: Gemini API kaliti sozlanmagan."})
+        
+    user_message = request.json.get('message')
+    
+    conn = get_db_connection()
+    books = conn.execute('SELECT title, author, genre, description FROM books').fetchall()
+    conn.close()
+    
+    books_context = "Kutubxonadagi mavjud kitoblar ro'yxati:\n"
+    for b in books:
+        books_context += f"- Nomi: {b['title']}, Muallif: {b['author']}, Janri: {b['genre']}, Tavsif: {b['description']}\n"
+        
+    prompt = f"""Siz aqlli kutubxona yordamchisiz. Foydalanuvchiga faqat o'zbek tilida, xushmuomila javob bering.
+{books_context}
+Foydalanuvchi savoli: {user_message}"""
+
+    try:
+        response = model.generate_content(prompt)
+        return jsonify({"reply": response.text})
+    except Exception as e:
+        return jsonify({"reply": f"Google Gemini API bilan bog'lanishda xatolik: {str(e)}"})
+
+if __name__ == '__main__':
+    app.run(debug=True)
