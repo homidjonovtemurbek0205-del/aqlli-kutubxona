@@ -14,10 +14,10 @@ gemini_key = os.getenv("GEMINI_API_KEY")
 
 app = Flask(__name__)
 
-# Gemini API sozlamalari
+# CHUNKI 2026-YILDA ENG SO'NGGI MUSTAHKAM VA TEKIN MODEL: gemini-2.5-flash-lite
 if gemini_key:
     genai.configure(api_key=gemini_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash-lite')
 else:
     model = None
 
@@ -26,7 +26,6 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# Ma'lumotlar bazasi yo'q bo'lsa, avtomat yaratish mantiqi
 if not os.path.exists('library.db'):
     from db_setup import init_db
     init_db()
@@ -47,6 +46,7 @@ def read_book(book_id):
         return "Kitob topilmadi", 404
     return render_template('read.html', book=book)
 
+# KATTA FILERLARDA QOTIB QOLMAYDIGAN OPTIMALLASHTIRILGAN ZIP YUKLASH TIZIMI
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
     conn = get_db_connection()
@@ -54,7 +54,12 @@ def admin_panel():
     if request.method == 'POST':
         zip_file = request.files.get('zip_file')
         if zip_file and zip_file.filename.endswith('.zip'):
-            with zipfile.ZipFile(zip_file) as archive:
+            # Faylni vaqtincha xavfsiz va tez saqlab olish
+            temp_path = "temp_upload.zip"
+            zip_file.save(temp_path)
+            
+            # Arxivni ochish va xotirani band qilmasdan oqim bilan bazaga yozish
+            with zipfile.ZipFile(temp_path) as archive:
                 for file_name in archive.namelist():
                     if file_name.endswith('.txt') and not file_name.startswith('__MACOSX'):
                         with archive.open(file_name) as f:
@@ -70,6 +75,11 @@ def admin_panel():
                                 (b_title.strip(), b_author.strip(), "Elektron Kitob", "Ommaviy yuklangan mukammal asar.", content)
                             )
                 conn.commit()
+            
+            # Server xotirasi to'lib qolmasligi uchun vaqtincha arxiv faylni darhol o'chiramiz
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                
         conn.close()
         return redirect(url_for('admin_panel'))
 
