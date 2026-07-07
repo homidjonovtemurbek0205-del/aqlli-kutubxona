@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Kutubxona - VIP Admin Panel</title>
-    <!-- Brauzerda ZIP ochish uchun eng kuchli kutubxona -->
+    <!-- Brauzerda ZIP ochish uchun jszip kutubxonasi -->
     <script src="https://cloudflare.com"></script>
     <style>
         body { background: #0f0f15; color: #fff; font-family: sans-serif; padding: 40px; display: flex; justify-content: center; align-items: center; min-height: 80vh; }
@@ -26,13 +26,13 @@
 <body>
     <div class="admin-box">
         <a href="/" class="btn-back">← Bosh sahifaga qaytish</a>
-        <h1>📦 Tezkor Ommaviy Yuklagich</h1>
-        <p>Ushbu tizim arxivni kompyuteringizni o'zida ochadi va Render serverini mutlaqo qotirmasdan bir necha soniyada kitoblarni bazaga yuklaydi!</p>
+        <h1>📦 Tezkor Ommaviy PDF Yuklagich</h1>
+        <p>Kitoblarni `.pdf` formatida tayyorlab, bitta `.zip` arxivga joylang va shu yerga yuklang.</p>
         
         <div class="upload-area">
             <span class="upload-icon">🚀</span>
             <h3 id="file-label">ZIP faylni tanlang yoki shu yerga tashlang</h3>
-            <span style="color: #6c6c80; font-size: 12px; display:block; margin-top:10px;">Format: Kitob_Nomi - Muallif.txt</span>
+            <span style="color: #6c6c80; font-size: 12px; display:block; margin-top:10px;">Format: Kitob_Nomi - Muallif.pdf</span>
             <input type="file" id="zip-file-input" class="file-input" accept=".zip" onchange="processZip(this)">
         </div>
 
@@ -42,82 +42,83 @@
         <div id="status-lbl"></div>
     </div>
 
-<script>
-async function processZip(input) {
-    if (input.files.length === 0) return;
-    
-    // Faylni to'g'ri o'qib olish (Fiks qilindi)
-    const file = input.files[0]; 
-    document.getElementById('file-label').innerText = "📂 Tanlandi: " + file.name;
-    document.getElementById('file-label').style.color = "#03dac6";
-    
-    const progressArea = document.getElementById('progress-area');
-    const pBar = document.getElementById('p-bar');
-    const statusLbl = document.getElementById('status-lbl');
-    
-    progressArea.style.display = "block";
-    statusLbl.innerText = "🔍 Arxiv kompyuterda ochilmoqda...";
-    pBar.style.width = "20%";
+    <script>
+    async function processZip(input) {
+        if (input.files.length === 0) return;
+        
+        const file = input.files[0]; 
+        document.getElementById('file-label').innerText = "📂 Tanlandi: " + file.name;
+        document.getElementById('file-label').style.color = "#03dac6";
+        
+        const progressArea = document.getElementById('progress-area');
+        const pBar = document.getElementById('p-bar');
+        const statusLbl = document.getElementById('status-lbl');
+        
+        progressArea.style.display = "block";
+        statusLbl.innerText = "🔍 Arxiv kompyuterda ochilmoqda...";
+        pBar.style.width = "20%";
 
-    const jszip = new JSZip();
-    try {
-        const zip = await jszip.loadAsync(file);
-        const booksToUpload = [];
+        const jszip = new JSZip();
+        try {
+            const zip = await jszip.loadAsync(file);
+            const booksToUpload = [];
 
-        pBar.style.width = "40%";
-        statusLbl.innerText = "📖 Kitob matnlari o'qilmoqda...";
+            pBar.style.width = "40%"
+            statusLbl.innerText = "📖 PDF kitoblar ro'yxati o'qilmoqda...";
 
-        for (let filename in zip.files) {
-            if (filename.endswith('.txt') && !filename.startsWith('__MACOSX')) {
-                const content = await zip.files[filename].async("string");
-                let cleanName = filename.replace('.txt', '');
-                let title = cleanName;
-                let author = "Noma'lum muallif";
-                
-                if (cleanName.includes(" - ")) {
-                    const parts = cleanName.split(" - ");
-                    title = parts[0];
-                    author = parts[1];
+            for (let filename in zip.files) {
+                // ENDI .pdf FORMATIDAGI FAYLLARNI QABUL QILADI
+                if (filename.toLowerCase().endsWith('.pdf') && !filename.startsWith('__MACOSX')) {
+                    
+                    // PDF faylining to'liq nomini tozalash
+                    let cleanName = filename.replace(/\.pdf$/i, '');
+                    let title = cleanName;
+                    let author = "Noma'lum muallif";
+                    
+                    if (cleanName.includes(" - ")) {
+                        const parts = cleanName.split(" - ");
+                        title = parts[0];
+                        author = parts[1];
+                    }
+
+                    booksToUpload.push({
+                        title: title.trim(),
+                        author: author.trim(),
+                        genre: "PDF Kitob",
+                        description: "Ommaviy yuklangan haqiqiy PDF asar.",
+                        content: "[PDF formati: Sayt orqali to'liq yuklangan]" 
+                    });
                 }
-
-                booksToUpload.push({
-                    title: title.trim(),
-                    author: author.trim(),
-                    genre: "Elektron Kitob",
-                    description: "Ommaviy yuklangan mukammal asar.",
-                    content: content
-                });
             }
-        }
 
-        if (booksToUpload.length === 0) {
-            statusLbl.innerText = "❌ Arxiv ichida .txt formatdagi kitoblar topilmadi!";
+            if (booksToUpload.length === 0) {
+                statusLbl.innerText = "❌ Arxiv ichida .pdf formatdagi kitoblar topilmadi!";
+                statusLbl.style.color = "#cf6679";
+                return;
+            }
+
+            pBar.style.width = "70%";
+            statusLbl.innerText = `⚡ ${booksToUpload.length} ta PDF kitob Render serveriga yuborilmoqda...`;
+
+            const response = await fetch('/admin', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({books: booksToUpload})
+            });
+
+            if (response.ok) {
+                pBar.style.width = "100%";
+                statusLbl.innerText = `🎉 Muvaffaqiyatli yakunlandi! barcha ${booksToUpload.length} ta PDF kitob ro'yxatga qo'shildi.`;
+                statusLbl.style.color = "#03dac6";
+            } else {
+                throw new Error("Server xatosi");
+            }
+
+        } catch (err) {
+            statusLbl.innerText = "❌ Yuklashda xatolik yuz berdi. Arxivni qayta tekshiring.";
             statusLbl.style.color = "#cf6679";
-            return;
         }
-
-        pBar.style.width = "70%";
-        statusLbl.innerText = `⚡ ${booksToUpload.length} ta kitob Render serveriga xavfsiz uzatilmoqda...`;
-
-        const response = await fetch('/admin', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({books: booksToUpload})
-        });
-
-        if (response.ok) {
-            pBar.style.width = "100%";
-            statusLbl.innerText = `🎉 Muvaffaqiyatli yakunlandi! barcha kitoblar bazaga yuklandi.`;
-            statusLbl.style.color = "#03dac6";
-        } else {
-            throw new Error("Server xatosi");
-        }
-
-    } catch (err) {
-        statusLbl.innerText = "❌ Yuklashda xatolik yuz berdi. Arxivni qayta tekshiring.";
-        statusLbl.style.color = "#cf6679";
     }
-}
-</script>
+    </script>
 </body>
 </html>
