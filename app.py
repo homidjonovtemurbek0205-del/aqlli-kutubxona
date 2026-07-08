@@ -57,52 +57,85 @@ def read_book(book_id):
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
-    if request.method == 'POST' and 'zipfile' in request.files:
-        file = request.files['zipfile']
-        if file.filename == '':
-            flash('Hech qanday fayl tanlanmadi', 'danger')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            if not os.path.exists(app.config['UPLOAD_FOLDER']):
-                os.makedirs(app.config['UPLOAD_FOLDER'])
-            
-            zip_path = os.path.join(app.config['UPLOAD_FOLDER'], str(uuid.uuid4()) + ".zip")
-            file.save(zip_path)
+    if request.method == 'POST':
+        if not os.path.exists(app.config['UPLOAD_FOLDER']):
+            os.makedirs(app.config['UPLOAD_FOLDER'])
 
-            extract_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_' + str(uuid.uuid4()))
-            os.makedirs(extract_folder)
+        # ZIP fayl yuklash logikasi
+        if 'zipfile' in request.files:
+            file = request.files['zipfile']
+            if file.filename == '':
+                flash('Hech qanday ZIP fayl tanlanmadi', 'danger')
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                zip_path = os.path.join(app.config['UPLOAD_FOLDER'], str(uuid.uuid4()) + ".zip")
+                file.save(zip_path)
 
-            try:
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(extract_folder)
+                extract_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_' + str(uuid.uuid4()))
+                os.makedirs(extract_folder)
+
+                try:
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(extract_folder)
+                    
+                    conn = get_db_connection()
+                    added_books = 0
+                    for root, _, files in os.walk(extract_folder):
+                        for filename in files:
+                            if filename.lower().endswith('.pdf'):
+                                pdf_path = os.path.join(root, filename)
+                                doc = fitz.open(pdf_path)
+                                content = "".join(page.get_text() for page in doc)
+                                doc.close()
+                                
+                                title = os.path.splitext(filename)[0]
+                                conn.execute('INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)', 
+                                             (title, 'Noma\'lum', 'PDF', f'{title} kitobining elektron nusxasi.', content))
+                                added_books += 1
+                    conn.commit()
+                    conn.close()
+                    flash(f'{added_books} ta PDF kitob arxivdan muvaffaqiyatli qo\'shildi!', 'success')
+                except Exception as e:
+                    flash(f'ZIP arxivni qayta ishlashda xatolik: {e}', 'danger')
+                finally:
+                    if os.path.exists(zip_path): os.remove(zip_path)
+                    if os.path.exists(extract_folder): shutil.rmtree(extract_folder)
                 
-                conn = get_db_connection()
-                added_books = 0
-                for root, _, files in os.walk(extract_folder):
-                    for filename in files:
-                        if filename.lower().endswith('.pdf'):
-                            pdf_path = os.path.join(root, filename)
-                            doc = fitz.open(pdf_path)
-                            content = ""
-                            for page in doc:
-                                content += page.get_text()
-                            doc.close()
-                            
-                            title = os.path.splitext(filename)[0]
-                            # Xatolikni tuzatish: Qaysi ustunlarga yozilayotganini aniq ko'rsatish
-                            conn.execute('INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)', (title, 'Noma\'lum', 'PDF', f'{title} kitobining elektron nusxasi.', content))
-                            added_books += 1
-                conn.commit()
-                conn.close()
-                flash(f'{added_books} ta PDF kitob muvaffaqiyatli bazaga qo\'shildi!', 'success')
-            except Exception as e:
-                flash(f'Xatolik yuz berdi: {e}', 'danger')
-            finally:
-                # Vaqtinchalik fayl va papkalarni tozalash
-                if os.path.exists(zip_path): os.remove(zip_path)
-                if os.path.exists(extract_folder): shutil.rmtree(extract_folder)
+                return redirect(url_for('admin_panel'))
+
+        # PDF fayl yuklash logikasi
+        if 'pdffile' in request.files:
+            file = request.files['pdffile']
+            if file.filename == '':
+                flash('Hech qanday PDF fayl tanlanmadi', 'danger')
+                return redirect(request.url)
             
-            return redirect(url_for('admin_panel'))
+            if file and file.filename.lower().endswith('.pdf'):
+                pdf_path = os.path.join(app.config['UPLOAD_FOLDER'], str(uuid.uuid4()) + ".pdf")
+                file.save(pdf_path)
+
+                try:
+                    doc = fitz.open(pdf_path)
+                    content = "".join(page.get_text() for page in doc)
+                    doc.close()
+                    
+                    title = os.path.splitext(file.filename)[0]
+                    
+                    conn = get_db_connection()
+                    conn.execute('INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)', 
+                                 (title, 'Noma\'lum', 'PDF', f'{title} kitobining elektron nusxasi.', content))
+                    conn.commit()
+                    conn.close()
+                    flash(f'"{title}" nomli PDF kitob muvaffaqiyatli qo\'shildi!', 'success')
+                except Exception as e:
+                    flash(f'PDF faylni o\'qishda xatolik: {e}', 'danger')
+                finally:
+                    if os.path.exists(pdf_path): os.remove(pdf_path)
+
+                return redirect(url_for('admin_panel'))
+            else:
+                flash('Faqat .pdf formatidagi fayllarni yuklay olasiz.', 'danger')
+                return redirect(request.url)
 
     return render_template('admin.html')
 

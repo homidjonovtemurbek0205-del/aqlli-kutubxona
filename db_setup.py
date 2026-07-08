@@ -16,9 +16,6 @@ def init_db():
     )
     ''')
     
-    # Eskidan qolgan ma'lumotlar bo'lsa tozalash
-    cursor.execute('DELETE FROM books')
-    
     # Haqiqiy o'qiladigan kitoblar matni (Namuna sifatida boblari bilan)
     namuna_kitoblar = [
         (

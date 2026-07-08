@@ -9,6 +9,7 @@
             background: #0f0f15; 
             color: #fff; 
             font-family: 'Poppins', sans-serif; 
+            font-size: 16px;
             padding: 40px; 
             margin: 0;
             display: flex;
@@ -17,7 +18,7 @@
             min-height: 100vh;
         }
         .container { 
-            max-width: 600px; 
+            max-width: 700px; 
             width: 100%;
             margin: 0 auto; 
             background: #161622;
@@ -29,7 +30,7 @@
         h1 { 
             color: #bb86fc; 
             margin: 0 0 30px 0; 
-            font-size: 28px;
+            font-size: 1.8em;
             text-align: center;
         }
         .upload-form {
@@ -37,11 +38,20 @@
             flex-direction: column;
             gap: 20px;
         }
+        .form-section {
+            border: 1px solid #232335;
+            padding: 25px;
+            border-radius: 12px;
+        }
+        h2 {
+            font-size: 1.3em;
+            color: #03dac6;
+            margin: 0 0 20px 0;
+            border-bottom: 1px solid #2a2a3a;
+            padding-bottom: 10px;
+        }
         .file-input-label {
             border: 2px dashed #232335;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
             cursor: pointer;
             transition: all 0.3s;
         }
@@ -70,11 +80,19 @@
         .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .alert-success { background-color: #03dac6; color: #121212; }
         .alert-danger { background-color: #cf6679; color: #121212; }
+        .home-link {
+            text-align: center; 
+            color: #a0a0a0; 
+            font-size: 14px; 
+            text-decoration: none; 
+            margin-top: 30px;
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📚 Kitoblar arxivini (.zip) yuklash</h1>
+        <h1>⚙️ Admin Boshqaruv Paneli</h1>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -82,16 +100,28 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <form action="{{ url_for('admin_panel') }}" method="post" enctype="multipart/form-data" class="upload-form">
-            <label for="zipfile" class="file-input-label">
-                Faylni tanlash uchun bu yerga bosing yoki faylni shu yerga tashlang
-            </label>
-            <input type="file" name="zipfile" id="zipfile" accept=".zip" required>
-            <button type="submit" class="btn-submit">Yuklash va Bazaga Qo'shish</button>
-            <a href="{{ url_for('index') }}" style="text-align: center; color: #a0a0a0; font-size: 14px; text-decoration: none; margin-top: 10px;">
-                Bosh sahifaga qaytish
-            </a>
-        </form>
+
+        <!-- ZIP fayl yuklash formasi -->
+        <div class="form-section">
+            <h2>📚 Kitoblar arxivini (.zip) yuklash</h2>
+            <form action="{{ url_for('admin_panel') }}" method="post" enctype="multipart/form-data" class="upload-form">
+                <input type="file" name="zipfile" id="zipfile" accept=".zip" required>
+                <button type="submit" class="btn-submit">Arxivni yuklash</button>
+            </form>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #232335; margin: 40px 0;">
+
+        <!-- Alohida PDF fayl yuklash formasi -->
+        <div class="form-section">
+            <h2>📄 Alohida PDF kitob yuklash</h2>
+            <form action="{{ url_for('admin_panel') }}" method="post" enctype="multipart/form-data" class="upload-form">
+                <input type="file" name="pdffile" id="pdffile" accept=".pdf" required>
+                <button type="submit" class="btn-submit">PDF faylni yuklash</button>
+            </form>
+        </div>
+
+        <a href="{{ url_for('index') }}" class="home-link">Bosh sahifaga qaytish</a>
     </div>
 </body>
 </html>
