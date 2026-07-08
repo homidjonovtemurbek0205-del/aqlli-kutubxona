@@ -89,8 +89,8 @@ def admin_panel():
                             doc.close()
                             
                             title = os.path.splitext(filename)[0]
-                            conn.execute('INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)',
-                                         (title, 'Noma\'lum', 'PDF', f'{title} kitobining elektron nusxasi.', content))
+                            # Xatolikni tuzatish: Qaysi ustunlarga yozilayotganini aniq ko'rsatish
+                            conn.execute('INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)', (title, 'Noma\'lum', 'PDF', f'{title} kitobining elektron nusxasi.', content))
                             added_books += 1
                 conn.commit()
                 conn.close()

@@ -3,82 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartLibrary - Aqlli AI Kutubxona</title>
+    <title>Aqlli Kutubxona | AI Tavsiyalari</title>
+    <!-- Google Fonts va FontAwesome Ulanishi -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- CHIROYLI MODERN VA NEON DIZAYNLAR UCHUN CSS STYLES -->
     <style>
+        /* Premium Glassmorphism & Dark Mode Dizayn Tizimi */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0d0b18 0%, #15102a 50%, #080610 100%);
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --primary: #8b5cf6; /* Violet */
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --secondary: #14b8a6; /* Teal */
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --danger: #ef4444;
+            --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body { 
+            font-family: var(--font);
             background: #0f0f15; 
             color: #fff; 
-            font-family: 'Poppins', sans-serif; 
-            padding: 40px; 
             margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
         }
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
+
+        header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--panel-border);
+            backdrop-filter: blur(12px);
+            background: rgba(13, 11, 24, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-        header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 50px; 
-            border-bottom: 1px solid #232335; 
-            padding-bottom: 20px;
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        h1 { 
-            color: #bb86fc; 
-            margin: 0; 
-            font-size: 32px; 
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            flex-grow: 1;
         }
-        .btn-admin-link {
-            background: #1e1e2f;
-            color: #bb86fc;
-            padding: 10px 20px;
+
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
             border-radius: 20px;
-            text-decoration: none;
-            font-weight: bold;
-            border: 1px solid #bb86fc;
-            transition: all 0.3s;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
-        .btn-admin-link:hover {
-            background: #bb86fc;
-            color: #121212;
-            box-shadow: 0 0 15px rgba(187, 134, 252, 0.4);
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #ffffff;
         }
-        
-        /* Kitoblar grid tizimi */
+
+        h2 i { color: var(--secondary); }
+
         .books-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
             gap: 30px; 
-            margin-bottom: 60px;
         }
+
         .book-card { 
             background: #161622; 
             padding: 30px; 
             border-radius: 16px; 
             box-shadow: 0 8px 25px rgba(0,0,0,0.4); 
             border: 1px solid #232335;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
         }
+
         .book-card:hover {
             transform: translateY(-5px);
             border-color: #bb86fc;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.2);
         }
+
         .book-title { 
             color: #03dac6; 
             font-size: 22px; 
             margin: 0 0 10px 0; 
         }
+
         .book-author { 
             color: #a0a0a0; 
             font-style: italic; 
             margin-bottom: 5px; 
         }
+
         .book-genre { 
             display: inline-block;
             background: #232335;
@@ -88,190 +135,225 @@
             border-radius: 10px;
             margin-bottom: 15px;
         }
+
         .book-desc { 
             color: #cbd5e1; 
             font-size: 14px; 
             line-height: 1.6;
-            margin-bottom: 20px;
+            flex-grow: 1;
+            margin-bottom: 1.5rem;
         }
 
-        /* NEON EFFEKTLI TUGMALAR DIZAYNI */
         .book-actions { 
             margin-top: auto; 
             display: flex; 
             gap: 12px; 
-            justify-content: center; 
-            flex-wrap: wrap;
         }
+
         .btn-action {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 20px;
+            padding: 8px 16px;
             font-size: 14px;
             font-weight: 600;
             border-radius: 30px;
             text-decoration: none;
             cursor: pointer;
             border: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            position: relative;
-        }
-        .btn-read-online {
-            background: linear-gradient(135deg, #03dac6, #018786);
-            color: #121212;
-        }
-        .btn-read-online:hover {
-            transform: translateY(-4px) scale(1.03);
-            box-shadow: 0 6px 20px rgba(3, 218, 198, 0.5);
-        }
-        .btn-listen {
-            background: linear-gradient(135deg, #bb86fc, #6200ee);
-            color: #ffffff;
-        }
-        .btn-listen:hover {
-            transform: translateY(-4px) scale(1.03);
-            box-shadow: 0 6px 20px rgba(187, 134, 252, 0.5);
-        }
-        .btn-action:hover .icon {
-            animation: pulseIcon 0.8s infinite alternate;
-        }
-        @keyframes pulseIcon {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.3); }
+            transition: all 0.3s ease;
         }
 
-        /* Chatbot interfeysi */
-        .chat-box {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 350px;
-            background: #161622;
-            border-radius: 12px;
-            border: 1px solid #232335;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-        }
-        .chat-header {
-            background: #232335;
-            padding: 15px;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            font-weight: bold;
+        .btn-read-online {
+            background: rgba(3, 218, 198, 0.1);
             color: #03dac6;
         }
-        .chat-messages {
-            height: 250px;
-            padding: 15px;
-            overflow-y: auto;
-            font-size: 14px;
+
+        .btn-read-online:hover {
+            background: #03dac6;
+            color: #111;
+        }
+
+        .btn-listen {
+            background: rgba(187, 134, 252, 0.1);
+            color: #bb86fc;
+        }
+
+        .btn-listen:hover {
+            background: #bb86fc;
+            color: #111;
+        }
+
+        /* SUZUVCHI AI CHATBOT OYNASI */
+        .chat-widget {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            align-items: flex-end;
         }
+
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+            box-shadow: 0 6px 20px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .chat-toggle:hover { transform: scale(1.1); }
+
+        .chat-window {
+            width: 380px;
+            height: 500px;
+            background: #110e24;
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            transform: translateY(20px) scale(0.9);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chat-window.active {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .chat-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--panel-border);
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 1.25rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
         .chat-input-area {
             display: flex;
             border-top: 1px solid #232335;
-            padding: 10px;
+            padding: 1rem;
         }
+
         .chat-input {
             flex: 1;
             background: #1e1e2f;
             border: 1px solid #232335;
             padding: 10px;
             color: #fff;
-            border-radius: 4px;
+            border-radius: 10px;
         }
+
         .chat-send-btn {
             background: #bb86fc;
             border: none;
             color: #121212;
             padding: 10px 15px;
             margin-left: 10px;
-            border-radius: 4px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: bold;
         }
     </style>
 </head>
 <body>
-
     <div class="container">
         <header>
-            <h1>📚 SmartLibrary</h1>
-            <a href="/admin" class="btn-admin-link">⚙️ Admin Panelga o'tish</a>
+            <div class="logo">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>SmartLibrary</span>
+            </div>
+            <a href="/admin" class="btn-action btn-listen" style="text-decoration: none;">
+                <i class="fa-solid fa-user-shield"></i> Admin Panel
+            </a>
         </header>
 
-        <h2>Kutubxonadagi Mavjud Kitoblar</h2>
-        
-        <div class="books-grid">
-            <!-- JINJA2 SIKLI BOSHLANISHI (TUGMALAR ENDI SHUNING ICHIDA) -->
-            {% for book in books %}
-            <div class="book-card">
-                <div>
-                    <h3 class="book-title">{{ book.title }}</h3>
-                    <div class="book-author">Muallif: {{ book.author }}</div>
-                    <div class="book-genre">{{ book.genre }}</div>
-                    <p class="book-desc">{{ book.description }}</p>
+        <div class="glass-panel">
+            <h2><i class="fa-solid fa-book-open-reader"></i> Kutubxona fondi</h2>
+            <div class="books-grid">
+                {% for book in books %}
+                <div class="book-card">
+                    <div>
+                        <h3 class="book-title">{{ book.title }}</h3>
+                        <div class="book-author">Muallif: {{ book.author }}</div>
+                        <div class="book-genre">{{ book.genre }}</div>
+                        <p class="book-desc">{{ book.description }}</p>
+                    </div>
+                    
+                    <div class="book-actions">
+                        <a href="/read/{{ book.id }}" class="btn-action btn-read-online">
+                            <i class="fa-solid fa-book-open"></i> O'qish
+                        </a>
+                        <button class="btn-action btn-listen" onclick="readAloud('{{ book.title }}. {{ book.description }}')">
+                            <i class="fa-solid fa-headphones-simple"></i> Tinglash
+                        </button>
+                    </div>
                 </div>
-                
-                <!-- SIKL ICHIDAGI TO'G'RI SOZLANGAN NEON TUGMALAR -->
-                <div class="book-actions">
-                    <a href="/read/{{ book.id }}" class="btn-action btn-read-online">
-                        <span class="icon">📖</span> Kitobni o'qish
-                    </a>
-                    <button class="btn-action btn-listen" onclick="readAloud('{{ book.title }}. {{ book.description }}')">
-                        <span class="icon">🎧</span> Kitobni tinglash
-                    </button>
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-            <!-- SIKL TUGASHI -->
         </div>
     </div>
 
     <!-- AI CHATBOT INTERFEYSI -->
-    <div class="chat-box">
-        <div class="chat-header">🤖 AI Kutubxonachi</div>
-        <div class="chat-messages" id="chat-messages">
-            <div style="background:#232335; padding:8px 12px; border-radius:8px; align-self:flex-start;">
-                Salom! Men aqlli yordamchiman. Kutubxonamizdagi kitoblar haqida nimalarni bilmoqchisiz?
+    <div class="chat-widget">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">🤖 AI Kutubxonachi</div>
+            <div class="chat-messages" id="chat-messages">
+                <div style="background:#232335; padding:8px 12px; border-radius:8px; align-self:flex-start;">
+                    Salom! Men aqlli yordamchiman. Kutubxonamizdagi kitoblar haqida nimalarni bilmoqchisiz?
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Xabar yozing..." onkeypress="handleKeyPress(event)">
+                <button class="chat-send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
-        <div class="chat-input-area">
-            <input type="text" id="chat-input" class="chat-input" placeholder="Xabar yozing..." onkeypress="handleKeyPress(event)">
-            <button class="chat-send-btn" onclick="sendMessage()">Yuborish</button>
-        </div>
+        <button class="chat-toggle" onclick="toggleChat()">
+            <i class="fa-solid fa-comments"></i>
+        </button>
     </div>
 
-    <!-- OVOZLI O'QISH JAVASCRIPT KODI -->
     <script>
+    // OVOZLI O'QISH FUNKSIYASI
     function readAloud(text) {
-        if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+        if (window.speechSynthesis.speaking) {
             window.speechSynthesis.cancel();
+            return;
         }
-        window.speechSynthesis.resume();
-
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'uz-UZ'; 
-        utterance.pitch = 1.0; 
-        utterance.rate = 0.95; 
-
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-            const uzVoice = voices.find(v => v.lang.includes('uz') || v.lang.includes('tr'));
-            if (uzVoice) utterance.voice = uzVoice;
-        }
+        utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
-    }
-    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
     }
 
     // AI Chatbot funksionalligi
+    function toggleChat() {
+        document.getElementById('chatWindow').classList.toggle('active');
+    }
+
     function handleKeyPress(event) {
         if (event.key === 'Enter') sendMessage();
     }
@@ -282,7 +364,7 @@
         if (!message) return;
 
         const msgArea = document.getElementById('chat-messages');
-        msgArea.innerHTML += `<div style="background:#bb86fc; color:#121212; padding:8px 12px; border-radius:8px; align-self:flex-end; max-width:80%;">${message}</div>`;
+        msgArea.innerHTML += `<div style="background:#8b5cf6; color:#fff; padding:8px 12px; border-radius:12px 12px 0 12px; align-self:flex-end; max-width:80%;">${message}</div>`;
         input.value = '';
         msgArea.scrollTop = msgArea.scrollHeight;
 
@@ -293,7 +375,7 @@
         })
         .then(res => res.json())
         .then(data => {
-            msgArea.innerHTML += `<div style="background:#232335; padding:8px 12px; border-radius:8px; align-self:flex-start; max-width:80%; margin-top:5px;">${data.reply}</div>`;
+            msgArea.innerHTML += `<div style="background:#232335; padding:8px 12px; border-radius:12px 12px 12px 0; align-self:flex-start; max-width:80%; margin-top:5px;">${data.reply.replace(/\\n/g, '<br>')}</div>`;
             msgArea.scrollTop = msgArea.scrollHeight;
         });
     }

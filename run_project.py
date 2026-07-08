@@ -740,6 +740,21 @@ HTML_CONTENT = """<!DOCTYPE html>
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             });
         }
+
+        // OVOZLI O'QISH FUNKSIYASI
+        function readAloud(text) {
+            // Agar boshqa narsa o'qilayotgan bo'lsa, to'xtatish
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                return; // Ikkinchi marta bosganda to'xtatadi
+            }
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'uz-UZ'; // O'zbek tilini belgilash
+            utterance.rate = 0.9; // O'qish tezligi
+            
+            // O'qishni boshlash
+            window.speechSynthesis.speak(utterance);
+        }
     </script>
 </body>
 </html>
