@@ -41,10 +41,14 @@ Misr ehromlari sari ketayotgan karvon sahro o'rtasida to'xtadi. Santyago u yerda
         )
     ]
     
-    cursor.executemany(
-        'INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)',
-        namuna_kitoblar
-    )
+    # Ma'lumotlarni faqat baza bo'sh bo'lganda qo'shamiz
+    cursor.execute("SELECT COUNT(id) FROM books")
+    if cursor.fetchone()[0] == 0:
+        print("Baza bo'sh. Namuna kitoblar qo'shilmoqda...")
+        cursor.executemany(
+            'INSERT INTO books (title, author, genre, description, content) VALUES (?, ?, ?, ?, ?)',
+            namuna_kitoblar
+        )
     
     conn.commit()
     conn.close()

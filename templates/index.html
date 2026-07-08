@@ -377,6 +377,11 @@
         .then(data => {
             msgArea.innerHTML += `<div style="background:#232335; padding:8px 12px; border-radius:12px 12px 12px 0; align-self:flex-start; max-width:80%; margin-top:5px;">${data.reply.replace(/\\n/g, '<br>')}</div>`;
             msgArea.scrollTop = msgArea.scrollHeight;
+        })
+        .catch(error => {
+            console.error("Chat xatoligi:", error);
+            msgArea.innerHTML += `<div style="background:#cf6679; color:#121212; padding:8px 12px; border-radius:12px 12px 12px 0; align-self:flex-start; max-width:80%; margin-top:5px;">Uzr, server bilan bog'lanishda xatolik yuz berdi.</div>`;
+            msgArea.scrollTop = msgArea.scrollHeight;
         });
     }
     </script>

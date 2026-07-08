@@ -105,8 +105,8 @@
         <div class="form-section">
             <h2>📚 Kitoblar arxivini (.zip) yuklash</h2>
             <form action="{{ url_for('admin_panel') }}" method="post" enctype="multipart/form-data" class="upload-form">
-                <input type="file" name="zipfile" id="zipfile" accept=".zip" required>
-                <button type="submit" class="btn-submit">Arxivni yuklash</button>
+                <input type="file" name="zipfile" id="zipfile" accept=".zip" required onchange="this.form.submit()">
+                <label for="zipfile" class="btn-submit" style="text-align: center;">Arxivni tanlang va yuklang</label>
             </form>
         </div>
 
@@ -116,8 +116,8 @@
         <div class="form-section">
             <h2>📄 Alohida PDF kitob yuklash</h2>
             <form action="{{ url_for('admin_panel') }}" method="post" enctype="multipart/form-data" class="upload-form">
-                <input type="file" name="pdffile" id="pdffile" accept=".pdf" required>
-                <button type="submit" class="btn-submit">PDF faylni yuklash</button>
+                <input type="file" name="pdffile" id="pdffile" accept=".pdf" required onchange="this.form.submit()">
+                <label for="pdffile" class="btn-submit" style="text-align: center;">PDF faylni tanlang va yuklang</label>
             </form>
         </div>
 
