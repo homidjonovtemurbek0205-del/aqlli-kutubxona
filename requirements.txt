@@ -1,5 +1,7 @@
-Flask==3.0.3
-google-generativeai==0.8.3
-python-dotenv==1.0.1
-gunicorn==22.0.0
-dotenv
+Flask
+google-generativeai
+python-dotenv
+PyMuPDF
+requests
+beautifulsoup4
+openai

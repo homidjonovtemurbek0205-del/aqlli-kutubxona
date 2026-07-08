@@ -1045,9 +1045,15 @@ def create_files():
 def install_dependencies():
     """Zaruriy kutubxonalarni o'rnatish"""
     print("\n2. Kutubxonalarni o'rnatish (pip install)...")
-    libs = ['Flask', 'google-generativeai', 'python-dotenv', 'openai']
+
+    requirements_file = 'requirements.txt'
+    if not os.path.exists(requirements_file):
+        print(f" - [XATOLIK] '{requirements_file}' fayli topilmadi. Iltimos, uni yarating.")
+        sys.exit(1)
+        
     try:
-        subprocess.run([sys.executable, "-m", "pip", "install"] + libs, check=True)
+        # Endi kutubxonalarni requirements.txt faylidan o'rnatamiz
+        subprocess.run([sys.executable, "-m", "pip", "install", "-r", requirements_file], check=True)
         print(" - [MUVAFFAQIYATLI] Kutubxonalar o'rnatildi.")
     except Exception as e:
         print(f" - [XATOLIK] Kutubxonalarni o'rnatishda muammo bo'ldi: {str(e)}")

@@ -2,123 +2,96 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>Kutubxona - VIP Admin Panel</title>
-    <!-- Brauzerda ZIP ochish uchun jszip kutubxonasi -->
-    <script src="https://cloudflare.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - ZIP Yuklash</title>
     <style>
-        body { background: #0f0f15; color: #fff; font-family: sans-serif; padding: 40px; display: flex; justify-content: center; align-items: center; min-height: 80vh; }
-        .admin-box { max-width: 600px; width: 100%; background: #161622; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #232335; text-align: center; }
-        h1 { color: #bb86fc; margin-bottom: 10px; font-size: 28px; }
-        p { color: #8a8a9e; font-size: 14px; margin-bottom: 30px; line-height: 1.5; }
-        .upload-area { border: 2px dashed #bb86fc; padding: 50px 20px; border-radius: 12px; background: #1e1e2f; cursor: pointer; transition: all 0.3s; position: relative; }
-        .upload-area:hover { background: #25253b; border-color: #03dac6; }
-        .file-input { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        .upload-icon { font-size: 60px; margin-bottom: 15px; display: inline-block; animation: float 3s infinite ease-in-out; }
-        button { width: 100%; background: linear-gradient(135deg, #bb86fc, #6200ee); color: #fff; padding: 16px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; margin-top: 25px; cursor: pointer; transition: all 0.3s; }
-        button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(187, 134, 252, 0.6); }
-        .btn-back { display: inline-block; color: #03dac6; text-decoration: none; font-size: 14px; margin-bottom: 20px; font-weight: bold; }
-        .progress-container { display: none; margin-top: 20px; background: #1e1e2f; border-radius: 10px; padding: 5px; border: 1px solid #232335; }
-        .progress-bar { width: 0%; height: 15px; background: linear-gradient(90deg, #03dac6, #bb86fc); border-radius: 8px; transition: width 0.2s; }
-        #status-lbl { margin-top: 10px; color: #03dac6; font-weight: bold; font-size: 14px; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        body { 
+            background: #0f0f15; 
+            color: #fff; 
+            font-family: 'Poppins', sans-serif; 
+            padding: 40px; 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 600px; 
+            width: 100%;
+            margin: 0 auto; 
+            background: #161622;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 1px solid #232335;
+        }
+        h1 { 
+            color: #bb86fc; 
+            margin: 0 0 30px 0; 
+            font-size: 28px;
+            text-align: center;
+        }
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .file-input-label {
+            border: 2px dashed #232335;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-input-label:hover {
+            border-color: #bb86fc;
+            background: rgba(187, 134, 252, 0.05);
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .btn-submit {
+            background: #bb86fc;
+            color: #121212;
+            padding: 12px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid #bb86fc;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            background: transparent;
+            color: #bb86fc;
+        }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-success { background-color: #03dac6; color: #121212; }
+        .alert-danger { background-color: #cf6679; color: #121212; }
     </style>
 </head>
 <body>
-    <div class="admin-box">
-        <a href="/" class="btn-back">← Bosh sahifaga qaytish</a>
-        <h1>📦 Tezkor Ommaviy PDF Yuklagich</h1>
-        <p>Kitoblarni `.pdf` formatida tayyorlab, bitta `.zip` arxivga joylang va shu yerga yuklang.</p>
-        
-        <div class="upload-area">
-            <span class="upload-icon">🚀</span>
-            <h3 id="file-label">ZIP faylni tanlang yoki shu yerga tashlang</h3>
-            <span style="color: #6c6c80; font-size: 12px; display:block; margin-top:10px;">Format: Kitob_Nomi - Muallif.pdf</span>
-            <input type="file" id="zip-file-input" class="file-input" accept=".zip" onchange="processZip(this)">
-        </div>
-
-        <div class="progress-container" id="progress-area">
-            <div class="progress-bar" id="p-bar"></div>
-        </div>
-        <div id="status-lbl"></div>
+    <div class="container">
+        <h1>📚 Kitoblar arxivini (.zip) yuklash</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form action="{{ url_for('admin_panel') }}" method="post" enctype="multipart/form-data" class="upload-form">
+            <label for="zipfile" class="file-input-label">
+                Faylni tanlash uchun bu yerga bosing yoki faylni shu yerga tashlang
+            </label>
+            <input type="file" name="zipfile" id="zipfile" accept=".zip" required>
+            <button type="submit" class="btn-submit">Yuklash va Bazaga Qo'shish</button>
+            <a href="{{ url_for('index') }}" style="text-align: center; color: #a0a0a0; font-size: 14px; text-decoration: none; margin-top: 10px;">
+                Bosh sahifaga qaytish
+            </a>
+        </form>
     </div>
-
-    <script>
-    async function processZip(input) {
-        if (input.files.length === 0) return;
-        
-        const file = input.files[0]; 
-        document.getElementById('file-label').innerText = "📂 Tanlandi: " + file.name;
-        document.getElementById('file-label').style.color = "#03dac6";
-        
-        const progressArea = document.getElementById('progress-area');
-        const pBar = document.getElementById('p-bar');
-        const statusLbl = document.getElementById('status-lbl');
-        
-        progressArea.style.display = "block";
-        statusLbl.innerText = "🔍 Arxiv kompyuterda ochilmoqda...";
-        pBar.style.width = "20%";
-
-        const jszip = new JSZip();
-        try {
-            const zip = await jszip.loadAsync(file);
-            const booksToUpload = [];
-
-            pBar.style.width = "40%"
-            statusLbl.innerText = "📖 PDF kitoblar ro'yxati o'qilmoqda...";
-
-            for (let filename in zip.files) {
-                // ENDI .pdf FORMATIDAGI FAYLLARNI QABUL QILADI
-                if (filename.toLowerCase().endsWith('.pdf') && !filename.startsWith('__MACOSX')) {
-                    
-                    // PDF faylining to'liq nomini tozalash
-                    let cleanName = filename.replace(/\.pdf$/i, '');
-                    let title = cleanName;
-                    let author = "Noma'lum muallif";
-                    
-                    if (cleanName.includes(" - ")) {
-                        const parts = cleanName.split(" - ");
-                        title = parts[0];
-                        author = parts[1];
-                    }
-
-                    booksToUpload.push({
-                        title: title.trim(),
-                        author: author.trim(),
-                        genre: "PDF Kitob",
-                        description: "Ommaviy yuklangan haqiqiy PDF asar.",
-                        content: "[PDF formati: Sayt orqali to'liq yuklangan]" 
-                    });
-                }
-            }
-
-            if (booksToUpload.length === 0) {
-                statusLbl.innerText = "❌ Arxiv ichida .pdf formatdagi kitoblar topilmadi!";
-                statusLbl.style.color = "#cf6679";
-                return;
-            }
-
-            pBar.style.width = "70%";
-            statusLbl.innerText = `⚡ ${booksToUpload.length} ta PDF kitob Render serveriga yuborilmoqda...`;
-
-            const response = await fetch('/admin', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({books: booksToUpload})
-            });
-
-            if (response.ok) {
-                pBar.style.width = "100%";
-                statusLbl.innerText = `🎉 Muvaffaqiyatli yakunlandi! barcha ${booksToUpload.length} ta PDF kitob ro'yxatga qo'shildi.`;
-                statusLbl.style.color = "#03dac6";
-            } else {
-                throw new Error("Server xatosi");
-            }
-
-        } catch (err) {
-            statusLbl.innerText = "❌ Yuklashda xatolik yuz berdi. Arxivni qayta tekshiring.";
-            statusLbl.style.color = "#cf6679";
-        }
-    }
-    </script>
 </body>
 </html>
