@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ book.title }} - Onlayn O'qish</title>
+    <style>
+        body { background: #121212; color: #e0e0e0; font-family: 'Georgia', serif; line-height: 1.8; padding: 40px; }
+        .reader-container { max-width: 700px; margin: 0 auto; background: #1e1e1e; padding: 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        h1 { color: #bb86fc; font-family: sans-serif; text-align: center; }
+        .author { text-align: center; font-style: italic; color: #a0a0a0; margin-bottom: 30px; }
+        .book-text { font-size: 18px; white-space: pre-wrap; text-align: justify; }
+        .back-btn { display: inline-block; margin-bottom: 20px; color: #03dac6; text-decoration: none; font-family: sans-serif; }
+    </style>
+</head>
+<body>
+    <div class="reader-container">
+        <a href="/" class="back-btn">← Kutubxonaga qaytish</a>
+        <h1>{{ book.title }}</h1>
+        <div class="author">Muallif: {{ book.author }}</div>
+        <hr style="border-color: #333;">
+        
+        <!-- Haqiqiy to'liq matn shu yerda chiqadi -->
+        <div class="book-text">
+            {{ book.content }}
+        </div>
+    </div>
+</body>
+</html>

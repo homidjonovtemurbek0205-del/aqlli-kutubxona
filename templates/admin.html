@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - ZIP Yuklash</title>
+    <style>
+        body { 
+            background: #0f0f15; 
+            color: #fff; 
+            font-family: 'Poppins', sans-serif; 
+            font-size: 16px;
+            padding: 40px; 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 700px; 
+            width: 100%;
+            margin: 0 auto; 
+            background: #161622;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 1px solid #232335;
+        }
+        h1 { 
+            color: #bb86fc; 
+            margin: 0 0 30px 0; 
+            font-size: 1.8em;
+            text-align: center;
+        }
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-section {
+            border: 1px solid #232335;
+            padding: 25px;
+            border-radius: 12px;
+        }
+        h2 {
+            font-size: 1.3em;
+            color: #03dac6;
+            margin: 0 0 20px 0;
+            border-bottom: 1px solid #2a2a3a;
+            padding-bottom: 10px;
+        }
+        .file-input-label {
+            border: 2px dashed #232335;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-input-label:hover {
+            border-color: #bb86fc;
+            background: rgba(187, 134, 252, 0.05);
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .btn-submit {
+            background: #bb86fc;
+            color: #121212;
+            padding: 12px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid #bb86fc;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            background: transparent;
+            color: #bb86fc;
+        }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-success { background-color: #03dac6; color: #121212; }
+        .alert-danger { background-color: #cf6679; color: #121212; }
+        .home-link {
+            text-align: center; 
+            color: #a0a0a0; 
+            font-size: 14px; 
+            text-decoration: none; 
+            margin-top: 30px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ Admin Boshqaruv Paneli</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- ZIP fayl yuklash formasi -->
+        <div class="form-section">
+            <h2>📚 Kitoblar arxivini (.zip) yuklash</h2>
+            <form action="{{ url_for('admin_panel') }}" method="post" enctype="multipart/form-data" class="upload-form">
+                <input type="file" name="zipfile" id="zipfile" accept=".zip" required onchange="this.form.submit()">
+                <label for="zipfile" class="btn-submit" style="text-align: center;">Arxivni tanlang va yuklang</label>
+            </form>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #232335; margin: 40px 0;">
+
+        <!-- Alohida PDF fayl yuklash formasi -->
+        <div class="form-section">
+            <h2>📄 Alohida PDF kitob yuklash</h2>
+            <form action="{{ url_for('admin_panel') }}" method="post" enctype="multipart/form-data" class="upload-form">
+                <input type="file" name="pdffile" id="pdffile" accept=".pdf" required onchange="this.form.submit()">
+                <label for="pdffile" class="btn-submit" style="text-align: center;">PDF faylni tanlang va yuklang</label>
+            </form>
+        </div>
+
+        <a href="{{ url_for('index') }}" class="home-link">Bosh sahifaga qaytish</a>
+    </div>
+</body>
+</html>

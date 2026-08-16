@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interaktiv Login Form</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="card" id="auth-card" data-mood="idle">
+    <!-- SVG Personajlar -->
+    <div class="illustration">
+      <svg viewBox="0 0 200 120" width="100%" height="100%">
+        <!-- Buloqsimon binafsha shaxs -->
+        <rect class="character purple" x="30" y="40" width="45" height="80" rx="8" />
+        <g class="eyes purple-eyes">
+          <circle cx="45" cy="60" r="3" fill="#000"/>
+          <circle cx="60" cy="60" r="3" fill="#000"/>
+        </g>
+
+        <!-- Qora shaxs -->
+        <rect class="character black" x="80" y="30" width="40" height="90" rx="6" />
+        <g class="eyes black-eyes">
+          <circle cx="90" cy="50" r="3" fill="#fff"/>
+          <circle cx="102" cy="50" r="3" fill="#fff"/>
+        </g>
+
+        <!-- Zargaldog' shaxs (Aylana) -->
+        <path class="character orange" d="M 120 120 A 45 45 0 0 1 210 120 Z" />
+        <g class="eyes orange-eyes">
+          <circle cx="150" cy="95" r="2.5" fill="#000"/>
+          <circle cx="170" cy="95" r="2.5" fill="#000"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Login Forma -->
+    <div class="form-container">
+      <h2>Xush kelibsiz</h2>
+      <p class="subtitle">Iltimos, ma'lumotlaringizni kiriting</p>
+
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="off">
+      </div>
+
+      <div class="input-group">
+        <label>Parol</label>
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="••••••••">
+          <button type="button" id="toggle-pw">👁️</button>
+        </div>
+      </div>
+
+      <button class="btn-primary">Kirish</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
