@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.shortcuts import render
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, SAFE_METHODS, BasePermission
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import Book, User
@@ -30,6 +30,13 @@ from .serializers import (
 
 gemini_key = getattr(settings, "GEMINI_API_KEY", os.getenv("GEMINI_API_KEY"))
 client = genai.Client(api_key=gemini_key) if gemini_key else None
+
+
+class IsAdminOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+        return request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)
 
 
 def index_view(request):
@@ -62,12 +69,52 @@ class UserMeView(APIView):
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrReadOnly]
+
+
+def extract_pdf_content(file_bytes):
+    toc = []
+    content = ""
+    # 1. Try PyMuPDF
+    try:
+        doc = pymupdf.open(stream=file_bytes, filetype="pdf")
+        toc = doc.get_toc()
+        text_list = []
+        char_count = 0
+        for page in doc:
+            text = page.get_text() or ""
+            text_list.append(text)
+            char_count += len(text)
+            if char_count > 100000:
+                break
+        content = "".join(text_list)
+        doc.close()
+    except Exception:
+        content = ""
+
+    # 2. Fallback to pypdf if empty
+    if not content.strip():
+        try:
+            import io, pypdf
+            reader = pypdf.PdfReader(io.BytesIO(file_bytes))
+            text_list = []
+            char_count = 0
+            for page in reader.pages:
+                text = page.extract_text() or ""
+                text_list.append(text)
+                char_count += len(text)
+                if char_count > 100000:
+                    break
+            content = "".join(text_list)
+        except Exception:
+            pass
+
+    return content.strip(), toc
 
 
 class UploadPDFView(APIView):
     parser_classes = (MultiPartParser, FormParser)
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def post(self, request, *args, **kwargs):
         serializer = PDFUploadSerializer(data=request.data)
@@ -75,21 +122,9 @@ class UploadPDFView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         uploaded_file = serializer.validated_data['pdffile']
-        doc = None
         try:
             file_bytes = uploaded_file.read()
-            doc = pymupdf.open(stream=file_bytes, filetype="pdf")
-            toc = doc.get_toc()
-
-            text_list = []
-            char_count = 0
-            for page in doc:
-                text = page.get_text()
-                text_list.append(text)
-                char_count += len(text)
-                if char_count > 50000:
-                    break
-            content = "".join(text_list)
+            content, toc = extract_pdf_content(file_bytes)
 
             title = os.path.splitext(uploaded_file.name)[0]
             clean_filename = get_valid_filename(uploaded_file.name)
@@ -109,14 +144,11 @@ class UploadPDFView(APIView):
 
         except Exception as e:
             return Response({"detail": f"PDF faylni o'qishda xatolik: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-        finally:
-            if doc:
-                doc.close()
 
 
 class UploadZIPView(APIView):
     parser_classes = (MultiPartParser, FormParser)
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def post(self, request, *args, **kwargs):
         serializer = ZIPUploadSerializer(data=request.data)
@@ -141,39 +173,24 @@ class UploadZIPView(APIView):
                     if filename.lower().endswith('.pdf'):
                         pdf_path = os.path.join(root, filename)
                         
-                        doc = None
-                        try:
-                            doc = pymupdf.open(pdf_path)
-                            toc = doc.get_toc()
+                        with open(pdf_path, 'rb') as f:
+                            fbytes = f.read()
 
-                            text_list = []
-                            char_count = 0
-                            for page in doc:
-                                text = page.get_text()
-                                text_list.append(text)
-                                char_count += len(text)
-                                if char_count > 50000:
-                                    break
-                            content = "".join(text_list)
-                        finally:
-                            if doc:
-                                doc.close()
-
+                        content, toc = extract_pdf_content(fbytes)
                         title = os.path.splitext(filename)[0]
                         clean_filename = get_valid_filename(filename)
                         unique_name = f"{uuid.uuid4().hex[:8]}_{clean_filename}"
 
-                        with open(pdf_path, 'rb') as f:
-                            book = Book(
-                                title=title,
-                                author="Noma'lum",
-                                genre="PDF",
-                                description=f"{title} kitobining elektron nusxasi.",
-                                content=content,
-                                toc=toc
-                            )
-                            book.file.save(unique_name, ContentFile(f.read()), save=True)
-                            added_books.append(book)
+                        book = Book(
+                            title=title,
+                            author="Noma'lum",
+                            genre="PDF",
+                            description=f"{title} kitobining elektron nusxasi.",
+                            content=content,
+                            toc=toc
+                        )
+                        book.file.save(unique_name, ContentFile(fbytes), save=True)
+                        added_books.append(book)
 
             return Response({
                 "message": f"{len(added_books)} ta PDF kitob qo'shildi.",
@@ -192,9 +209,6 @@ class AIChatView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        if not client:
-            return Response({"reply": "Gemini API sozlanmagan."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
         serializer = ChatRequestSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -207,6 +221,9 @@ class AIChatView(APIView):
         for b in books:
             content_snippet = b['content'][:500] if b['content'] else ""
             books_context += f"---\nID: {b['id']}\nNomi: {b['title']}\nMuallif: {b['author']}\nQisqacha: {b['description']}\nMatn: {content_snippet}...\n---\n"
+
+        if not client:
+            return Response({"reply": f"AI yordamchi tayyor. Kontekstda {len(books)} ta kitob mavjud."}, status=status.HTTP_200_OK)
 
         prompt = f"KUTUBXONA MA'LUMOTLARI:\n{books_context}\n\nFoydalanuvchi: {user_message}"
 
