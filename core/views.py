@@ -13,24 +13,50 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import render
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .models import Book
+from .models import Book, User
 from .serializers import (
     BookSerializer, 
     PDFUploadSerializer, 
     ZIPUploadSerializer, 
     ChatRequestSerializer,
-    EmailTokenObtainPairSerializer
+    EmailTokenObtainPairSerializer,
+    RegisterSerializer,
+    UserSerializer
 )
 
 gemini_key = getattr(settings, "GEMINI_API_KEY", os.getenv("GEMINI_API_KEY"))
 client = genai.Client(api_key=gemini_key) if gemini_key else None
 
 
+def index_view(request):
+    return render(request, 'core/index.html')
+
+
 class EmailTokenObtainView(TokenObtainPairView):
+    permission_classes = [AllowAny]
     serializer_class = EmailTokenObtainPairSerializer
+
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserMeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        return Response(UserSerializer(request.user).data)
 
 
 class BookViewSet(viewsets.ModelViewSet):

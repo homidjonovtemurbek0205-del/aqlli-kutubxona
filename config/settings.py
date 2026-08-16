@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-p)w+v87g0m+*z&p$5pubo@n3$u_yptj+5(i*xgr#^w(__859la
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -137,9 +137,15 @@ REST_FRAMEWORK = {
 }
 
 
+AUTH_USER_MODEL = 'core.User'
+
+
+
 from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
