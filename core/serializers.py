@@ -1,20 +1,25 @@
 from rest_framework import serializers
-from .models import Book
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import get_user_model
+from .models import Book, User
+
+User = get_user_model()
+
+class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = User.EMAIL_FIELD
 
 class BookSerializer(serializers.ModelSerializer):
+    file = serializers.SerializerMethodField()
+
     class Meta:
         model = Book
-        fields = [
-            'id', 
-            'title', 
-            'author', 
-            'genre', 
-            'description', 
-            'content', 
-            'file', 
-            'toc', 
-            'created_at'
-        ]
+        fields = ['id', 'title', 'author', 'genre', 'description', 'content', 'file', 'toc', 'created_at']
+
+    def get_file(self, obj):
+        request = self.context.get('request')
+        if obj.file and request is not None:
+            return request.build_absolute_uri(obj.file.url)
+        return obj.file.url if obj.file else None
 
 class PDFUploadSerializer(serializers.Serializer):
     pdffile = serializers.FileField(required=True)

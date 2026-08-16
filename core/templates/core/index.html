@@ -2,61 +2,222 @@
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interaktiv Login Form</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Aqlli Kutubxona Portal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background: #0f111a; color: #fff; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+
+    /* LOGIN VIEW */
+    .auth-card { background: #ffffff; display: flex; width: 720px; border-radius: 20px; overflow: hidden; color: #333; }
+    .illustration { width: 50%; background: #f4f5f8; display: flex; align-items: flex-end; justify-content: center; padding: 20px; }
+    .form-container { width: 50%; padding: 40px; display: flex; flex-direction: column; justify-content: center; }
+    .form-container h2 { font-size: 24px; margin-bottom: 6px; color: #1a1a1a; }
+    .form-container p { font-size: 13px; color: #666; margin-bottom: 20px; }
+    .input-group { margin-bottom: 14px; }
+    .input-group label { display: block; font-size: 12px; margin-bottom: 6px; font-weight: 600; }
+    .input-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+    .btn-primary { background: #18181b; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+
+    /* DASHBOARD VIEW */
+    .dashboard { width: 100%; min-height: 100vh; display: none; }
+    .sidebar { width: 260px; background: #161926; padding: 20px; border-right: 1px solid #23273a; display: flex; flex-direction: column; }
+    .logo { font-size: 20px; font-weight: bold; color: #6c5ce7; margin-bottom: 30px; }
+    .menu-item { padding: 12px 16px; border-radius: 8px; color: #a0a5ba; cursor: pointer; margin-bottom: 8px; }
+    .menu-item.active, .menu-item:hover { background: #6c5ce7; color: #fff; }
+    .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+    .upload-section { background: #161926; border: 2px dashed #23273a; border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 30px; }
+    .btn-upload { background: #6c5ce7; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    .book-card { background: #161926; border-radius: 12px; padding: 16px; border: 1px solid #23273a; }
+    .book-title { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
+    .book-author { font-size: 13px; color: #8288a1; margin-bottom: 12px; }
+    .btn-read { display: block; width: 100%; text-align: center; background: #6c5ce7; color: #fff; padding: 8px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; }
+
+    /* CHAT PANEL */
+    .chat-panel { position: fixed; right: 20px; bottom: 20px; width: 320px; background: #161926; border: 1px solid #23273a; border-radius: 12px; display: flex; flex-direction: column; height: 380px; }
+    .chat-header { background: #6c5ce7; padding: 12px; font-weight: bold; }
+    .chat-body { flex: 1; padding: 12px; overflow-y: auto; font-size: 13px; }
+    .chat-input { display: flex; border-top: 1px solid #23273a; }
+    .chat-input input { flex: 1; background: transparent; border: none; padding: 10px; color: #fff; outline: none; }
+    .chat-input button { background: #6c5ce7; border: none; color: #fff; padding: 0 15px; cursor: pointer; }
+  </style>
 </head>
 <body>
 
-  <div class="card" id="auth-card" data-mood="idle">
-    <!-- SVG Personajlar -->
-    <div class="illustration">
-      <svg viewBox="0 0 200 120" width="100%" height="100%">
-        <!-- Buloqsimon binafsha shaxs -->
-        <rect class="character purple" x="30" y="40" width="45" height="80" rx="8" />
-        <g class="eyes purple-eyes">
-          <circle cx="45" cy="60" r="3" fill="#000"/>
-          <circle cx="60" cy="60" r="3" fill="#000"/>
-        </g>
-
-        <!-- Qora shaxs -->
-        <rect class="character black" x="80" y="30" width="40" height="90" rx="6" />
-        <g class="eyes black-eyes">
-          <circle cx="90" cy="50" r="3" fill="#fff"/>
-          <circle cx="102" cy="50" r="3" fill="#fff"/>
-        </g>
-
-        <!-- Zargaldog' shaxs (Aylana) -->
-        <path class="character orange" d="M 120 120 A 45 45 0 0 1 210 120 Z" />
-        <g class="eyes orange-eyes">
-          <circle cx="150" cy="95" r="2.5" fill="#000"/>
-          <circle cx="170" cy="95" r="2.5" fill="#000"/>
-        </g>
-      </svg>
-    </div>
-
-    <!-- Login Forma -->
+  <!-- LOGIN SECTION -->
+  <div class="auth-card" id="authSection">
+    <div class="illustration">📚</div>
     <div class="form-container">
-      <h2>Xush kelibsiz</h2>
-      <p class="subtitle">Iltimos, ma'lumotlaringizni kiriting</p>
-
-      <div class="input-group">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="you@example.com" autocomplete="off">
-      </div>
-
-      <div class="input-group">
-        <label>Parol</label>
-        <div class="password-wrapper">
-          <input type="password" id="password" placeholder="••••••••">
-          <button type="button" id="toggle-pw">👁️</button>
+      <h2>Welcome Back</h2>
+      <p>Kutubxonaga kirish uchun email va parolingizni kiriting.</p>
+      <form id="loginForm">
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" id="email" required autocomplete="off">
         </div>
-      </div>
-
-      <button class="btn-primary">Kirish</button>
+        <div class="input-group">
+          <label>Parol</label>
+          <input type="password" id="password" required>
+        </div>
+        <button type="submit" class="btn-primary">Kirish</button>
+      </form>
+      <div id="errorMsg" style="color:red; font-size:12px; margin-top:10px;"></div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- DASHBOARD SECTION -->
+  <div class="dashboard" id="dashSection">
+    <div class="sidebar">
+      <div class="logo">📚 SmartLib</div>
+      <div class="menu-item active">Barcha Kitoblar</div>
+      <div class="menu-item" onclick="logout()">Chiqish</div>
+    </div>
+    <div class="main-content">
+      <h2>Elektron Kutubxona</h2>
+      <p style="color: #8288a1; margin-bottom: 20px;">PDF kitob yuklang va asl ko'rinishida o'qing</p>
+
+      <div class="upload-section">
+        <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+        <p>Yangi PDF kitob yuklash uchun faylni tanlang</p>
+        <button class="btn-upload" onclick="document.getElementById('fileInput').click()">Fayl Tanlash</button>
+      </div>
+
+      <div class="book-grid" id="bookGrid"></div>
+    </div>
+
+    <div class="chat-panel">
+      <div class="chat-header">🤖 AI Yordamchi</div>
+      <div class="chat-body" id="chatBody">
+        <div><b>AI:</b> Assalomu alaykum! Kitoblar bo'yicha savolingiz bormi?</div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Savol bering...">
+        <button onclick="sendChatMessage()">Yuborish</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const authSection = document.getElementById('authSection');
+    const dashSection = document.getElementById('dashSection');
+    const loginForm = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+
+    function checkAuth() {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        authSection.style.display = 'none';
+        dashSection.style.display = 'flex';
+        document.body.style.justifyContent = 'flex-start';
+        document.body.style.alignItems = 'stretch';
+        loadBooks();
+      } else {
+        authSection.style.display = 'flex';
+        dashSection.style.display = 'none';
+        document.body.style.justifyContent = 'center';
+        document.body.style.alignItems = 'center';
+      }
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.innerText = '';
+      try {
+        const res = await fetch('/api/auth/login/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('access_token', data.access);
+          localStorage.setItem('refresh_token', data.refresh);
+          checkAuth();
+        } else {
+          errorMsg.innerText = 'Email yoki parol xato!';
+        }
+      } catch (err) {
+        errorMsg.innerText = 'Tizimda xatolik yuz berdi.';
+      }
+    });
+
+    async function loadBooks() {
+      const token = localStorage.getItem('access_token');
+      const res = await fetch('/api/books/', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if(res.status === 401) return logout();
+      
+      const data = await res.json();
+      const grid = document.getElementById('bookGrid');
+      grid.innerHTML = '';
+      
+      data.forEach(book => {
+        grid.innerHTML += `
+          <div class="book-card">
+            <div class="book-title">${book.title}</div>
+            <div class="book-author">${book.author}</div>
+            <a class="btn-read" href="${book.file}" target="_blank">O'qish (PDF)</a>
+          </div>
+        `;
+      });
+    }
+
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if(!file) return;
+
+      const token = localStorage.getItem('access_token');
+      const formData = new FormData();
+      formData.append('pdffile', file);
+
+      const res = await fetch('/api/upload-pdf/', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: formData
+      });
+
+      if(res.ok) {
+        alert("Kitob yuklandi!");
+        loadBooks();
+      } else {
+        alert("Yuklashda xatolik.");
+      }
+    });
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value;
+      if(!msg) return;
+
+      const token = localStorage.getItem('access_token');
+      const chatBody = document.getElementById('chatBody');
+      chatBody.innerHTML += `<div style="margin-top:8px;"><b>Siz:</b> ${msg}</div>`;
+      input.value = '';
+
+      const res = await fetch('/api/chat/', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token 
+        },
+        body: JSON.stringify({ message: msg })
+      });
+
+      const data = await res.json();
+      chatBody.innerHTML += `<div style="margin-top:8px; color:#6c5ce7;"><b>AI:</b> ${data.reply}</div>`;
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function logout() {
+      localStorage.clear();
+      checkAuth();
+    }
+
+    checkAuth();
+  </script>
 </body>
 </html>

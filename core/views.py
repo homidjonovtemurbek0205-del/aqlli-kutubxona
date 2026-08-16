@@ -6,34 +6,42 @@ import pymupdf
 from google import genai
 
 from django.conf import settings
-from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from django.utils.text import get_valid_filename
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import Book
 from .serializers import (
     BookSerializer, 
     PDFUploadSerializer, 
     ZIPUploadSerializer, 
-    ChatRequestSerializer
+    ChatRequestSerializer,
+    EmailTokenObtainPairSerializer
 )
 
-# Gemini API sozlamasi
 gemini_key = getattr(settings, "GEMINI_API_KEY", os.getenv("GEMINI_API_KEY"))
 client = genai.Client(api_key=gemini_key) if gemini_key else None
+
+
+class EmailTokenObtainView(TokenObtainPairView):
+    serializer_class = EmailTokenObtainPairSerializer
 
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class UploadPDFView(APIView):
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = PDFUploadSerializer(data=request.data)
@@ -41,13 +49,10 @@ class UploadPDFView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         uploaded_file = serializer.validated_data['pdffile']
-        
-        # PyMuPDF xotiradagi (memory) fayldan to'g'ridan-to'g'ri o'qiy oladi!
-        # Diskka vaqtinchalik saqlash shart emas.
         doc = None
         try:
             file_bytes = uploaded_file.read()
-            doc = fitz.open(stream=file_bytes, filetype="pdf")
+            doc = pymupdf.open(stream=file_bytes, filetype="pdf")
             toc = doc.get_toc()
 
             text_list = []
@@ -61,9 +66,8 @@ class UploadPDFView(APIView):
             content = "".join(text_list)
 
             title = os.path.splitext(uploaded_file.name)[0]
-            
-            # Faylni Django storage orqali saqlash
-            unique_name = f"{uuid.uuid4()}.pdf"
+            clean_filename = get_valid_filename(uploaded_file.name)
+            unique_name = f"{uuid.uuid4().hex[:8]}_{clean_filename}"
             
             book = Book(
                 title=title,
@@ -75,7 +79,7 @@ class UploadPDFView(APIView):
             )
             book.file.save(unique_name, ContentFile(file_bytes), save=True)
 
-            return Response(BookSerializer(book).data, status=status.HTTP_201_CREATED)
+            return Response(BookSerializer(book, context={'request': request}).data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return Response({"detail": f"PDF faylni o'qishda xatolik: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
@@ -86,6 +90,7 @@ class UploadPDFView(APIView):
 
 class UploadZIPView(APIView):
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = ZIPUploadSerializer(data=request.data)
@@ -99,11 +104,10 @@ class UploadZIPView(APIView):
         added_books = []
         try:
             with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
-                # Zip Slip xavfsizlik tekshiruvi
                 for member in zip_ref.infolist():
                     member_path = os.path.abspath(os.path.join(temp_dir, member.filename))
                     if not member_path.startswith(os.path.abspath(temp_dir)):
-                        raise Exception("Arxiv ichida xavfsiz bo'lmagan fayl yo'li aniqlandi (Zip Slip).")
+                        raise Exception("Zip Slip xavfi aniqlandi.")
                 zip_ref.extractall(temp_dir)
 
             for root, _, files in os.walk(temp_dir):
@@ -113,7 +117,7 @@ class UploadZIPView(APIView):
                         
                         doc = None
                         try:
-                            doc = fitz.open(pdf_path)
+                            doc = pymupdf.open(pdf_path)
                             toc = doc.get_toc()
 
                             text_list = []
@@ -130,7 +134,8 @@ class UploadZIPView(APIView):
                                 doc.close()
 
                         title = os.path.splitext(filename)[0]
-                        unique_name = f"{uuid.uuid4()}.pdf"
+                        clean_filename = get_valid_filename(filename)
+                        unique_name = f"{uuid.uuid4().hex[:8]}_{clean_filename}"
 
                         with open(pdf_path, 'rb') as f:
                             book = Book(
@@ -145,12 +150,12 @@ class UploadZIPView(APIView):
                             added_books.append(book)
 
             return Response({
-                "message": f"{len(added_books)} ta PDF kitob muvaffaqiyatli qo'shildi.",
-                "books": BookSerializer(added_books, many=True).data
+                "message": f"{len(added_books)} ta PDF kitob qo'shildi.",
+                "books": BookSerializer(added_books, many=True, context={'request': request}).data
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            return Response({"detail": f"ZIP arxivni qayta ishlashda xatolik: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"ZIP arxivda xatolik: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
         finally:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir, ignore_errors=True)
@@ -158,10 +163,11 @@ class UploadZIPView(APIView):
 
 class AIChatView(APIView):
     parser_classes = (JSONParser,)
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         if not client:
-            return Response({"reply": "Xatolik: Gemini API kaliti sozlanmagan."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"reply": "Gemini API sozlanmagan."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         serializer = ChatRequestSerializer(data=request.data)
         if not serializer.is_valid():
@@ -170,39 +176,20 @@ class AIChatView(APIView):
         user_message = serializer.validated_data['message']
 
         books = Book.objects.all().order_by('-id')[:10].values('id', 'title', 'author', 'genre', 'description', 'content')
-        books_context = "Kutubxonadagi so'nggi kitoblar ro'yxati:\n"
+        books_context = "Kutubxonadagi so'nggi kitoblar:\n"
         
         for b in books:
             content_snippet = b['content'][:500] if b['content'] else ""
-            books_context += f"""---
-ID: {b['id']}
-Nomi: {b['title']}
-Muallif: {b['author']}
-Janri: {b['genre']}
-Qisqacha tavsif: {b['description']}
-Matndan parcha: {content_snippet}... 
----\n"""
+            books_context += f"---\nID: {b['id']}\nNomi: {b['title']}\nMuallif: {b['author']}\nQisqacha: {b['description']}\nMatn: {content_snippet}...\n---\n"
 
-        system_instruction = """Siz "Aqlli Kutubxona"ning AI yordamchisisiz. Sizning vazifalaringiz:
-1. Foydalanuvchi so'ragan janr yoki mavzudagi kitoblarni tavsiya qilish.
-2. Foydalanuvchi biror kitob haqida so'rasa, uning mazmunini aytib berish.
-3. Foydalanuvchi bilan o'qigan kitoblari bo'yicha savol-javob qilish.
-4. Foydalanuvchi kitob qidirsa, unga yordam berish.
-Javoblaringizni doim o'zbek tilida, xushmuomila va aniq bering."""
-
-        prompt = f"""MAVJUD KITOBLAR MA'LUMOTI:
-{books_context}
-
-Foydalanuvchi savoli: {user_message}"""
+        prompt = f"KUTUBXONA MA'LUMOTLARI:\n{books_context}\n\nFoydalanuvchi: {user_message}"
 
         try:
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=prompt,
-                config={
-                    "system_instruction": system_instruction
-                }
+                config={"system_instruction": "Siz Aqlli Kutubxonaning AI yordamchisisiz. Foydalanuvchiga kitoblar bo'yicha yordam bering."}
             )
             return Response({"reply": response.text}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"reply": f"Google Gemini API bilan bog'lanishda xatolik: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"reply": f"AI Xatolik: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
