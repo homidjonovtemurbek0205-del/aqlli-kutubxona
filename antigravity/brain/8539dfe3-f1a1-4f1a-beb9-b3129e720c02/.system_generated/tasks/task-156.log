@@ -1,0 +1,14 @@
+Forbidden: /api/upload-pdf/
+Forbidden: /api/books/2/
+--- 1. Testing Admin User Authentication ---
+Admin me endpoint status: {'id': 1, 'email': 'admin@library.com', 'username': 'admin', 'is_staff': True, 'is_superuser': True}
+--- 2. Testing Regular User Authentication ---
+Regular user me endpoint status: {'id': 2, 'email': 'user@library.com', 'username': 'testuser', 'is_staff': False, 'is_superuser': False}
+--- 3. Testing RBAC for Book Upload ---
+Regular user upload status: 403
+--- 4. Testing Book Creation by Admin & Reading by Regular User ---
+Regular user list books status 200 OK. Count: 2
+Regular user delete book status: 403
+Admin delete book status: 204
+
+ALL RBAC AND PERMISSION TESTS PASSED PERFECTLY!

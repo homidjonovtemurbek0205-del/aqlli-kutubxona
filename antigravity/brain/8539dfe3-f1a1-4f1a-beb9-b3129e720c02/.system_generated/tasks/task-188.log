@@ -1,0 +1,19 @@
+Creating test database for alias 'default'...
+..F...
+======================================================================
+FAIL: test_ai_chat_with_extracted_content (core.tests.PDFExtractionAndLibraryTests.test_ai_chat_with_extracted_content)
+AI Chatbot view matnlarni xatosiz qayta ishlashini tekshirish
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Surface PC\.gemini\core\tests.py", line 98, in test_ai_chat_with_extracted_content
+    self.assertEqual(response.status_code, 200)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 500 != 200
+
+----------------------------------------------------------------------
+Ran 6 tests in 23.655s
+
+FAILED (failures=1)
+Destroying test database for alias 'default'...
+Found 6 test(s).
+System check identified no issues (0 silenced).

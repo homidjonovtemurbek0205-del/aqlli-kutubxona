@@ -1,4 +1,15 @@
+<<<<<<< HEAD
 .env
 *.json
 *.db
 antigravity/
+=======
+*.sqlite3
+*.db
+*.sqlite3-journal
+venv/
+env/
+__pycache__/
+*.pyc
+.env
+>>>>>>> abd65b8 (yana)
