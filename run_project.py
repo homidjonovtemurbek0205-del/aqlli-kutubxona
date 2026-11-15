@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Aqlli Kutubxona Sayti (Library Management System with AI)
+Aqlli Kutubxona Sayti (Smart Library with AI & Audiobooks)
 Loyihani sozlovchi va ishga tushiruvchi skript.
 
 Ushbu skript:
-1. Kerakli Python kutubxonalarini o'rnatadi.
-2. Ma'lumotlar bazasini (agar mavjud bo'lmasa) yaratadi.
-3. Flask serverini ishga tushiradi.
+1. Zaruriy Python kutubxonalarini o'rnatadi.
+2. Django ma'lumotlar bazasini sozlaydi va mavjud kitoblarni indekslaydi.
+3. Serverni ishga tushiradi (http://127.0.0.1:8000/).
 """
 
 import os
@@ -15,53 +15,52 @@ import subprocess
 
 def install_dependencies():
     """Zaruriy kutubxonalarni o'rnatish"""
-    print("\n1. Kutubxonalarni o'rnatish (pip install)...")
-
+    print("\n1. Kutubxonalarni tekshirish va o'rnatish...")
     requirements_file = 'requirements.txt'
-    if not os.path.exists(requirements_file):
-        print(f" - [XATOLIK] '{requirements_file}' fayli topilmadi. Iltimos, uni yarating.")
-        sys.exit(1)
-        
-    try:
-        # Endi kutubxonalarni requirements.txt faylidan o'rnatamiz
-        subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "-r", requirements_file], check=True)
-        print(" - [MUVAFFAQIYATLI] Kutubxonalar o'rnatildi.")
-    except Exception as e:
-        print(f" - [XATOLIK] Kutubxonalarni o'rnatishda muammo bo'ldi: {str(e)}")
-        sys.exit(1)
+    if os.path.exists(requirements_file):
+        try:
+            subprocess.run([sys.executable, "-m", "pip", "install", "-r", requirements_file], check=True)
+            print(" - [MUVAFFAQIYATLI] Kutubxonalar tayyor.")
+        except Exception as e:
+            print(f" - [OGOHLANTIRISH] pip install muammo: {e}")
 
 def setup_database():
-    """Ma'lumotlar bazasini yaratish"""
-    print("\n2. Ma'lumotlar bazasini sozlash (SQLite)...")
-    if not os.path.exists('library.db'):
-        print(" - 'library.db' topilmadi, yangisi yaratilmoqda...")
-        try:
-            subprocess.run([sys.executable, "db_setup.py"], check=True)
-            print(" - [MUVAFFAQIYATLI] Ma'lumotlar bazasi yaratildi.")
-        except Exception as e:
-            print(f" - [XATOLIK] Baza yaratishda muammo bo'ldi: {str(e)}")
-            sys.exit(1)
-    else:
-        print(" - [MAVJUD] 'library.db' fayli allaqachon mavjud.")
-
-def run_flask_server():
-    """Flask ilovasini ishga tushirish"""
-    print("\n3. Flask serverini ishga tushirish...")
-    print("=" * 60)
-    print("Saytni ko'rish uchun quyidagi manzilni brauzerda oching:")
-    print("--> http://127.0.0.1:5000/")
-    print("Serverni o'chirish uchun terminalda CTRL + C tugmalarini bosing.")
-    print("=" * 60)
-    
+    """Ma'lumotlar bazasini sozlash (Django SQLite)"""
+    print("\n2. Ma'lumotlar bazasini sozlash (Django Migrations)...")
     try:
-        subprocess.run([sys.executable, "app.py"])
+        subprocess.run([sys.executable, "manage.py", "migrate"], check=True)
+        print(" - [MUVAFFAQIYATLI] Migratsiyalar bajarildi.")
+    except Exception as e:
+        print(f" - [XATOLIK] Migratsiyada xatolik: {e}")
+        sys.exit(1)
+
+    print("\n3. Boshlang'ich foydalanuvchilar va kitoblarni indekslash...")
+    try:
+        subprocess.run([sys.executable, "manage.py", "setup_library"], check=True)
+        print(" - [MUVAFFAQIYATLI] Admin va kitoblar fondi sozlandi.")
+    except Exception as e:
+        print(f" - [OGOHLANTIRISH] setup_library: {e}")
+
+def run_server():
+    """Django serverini ishga tushirish"""
+    print("\n4. Server ishga tushirilmoqda...")
+    print("=" * 60)
+    print("  AQLLI KUTUBXONA TIZIMI TAYYOR!")
+    print("  --> http://127.0.0.1:8000/")
+    print("  Admin hisobi:  admin@library.com  |  Parol: admin123")
+    print("  Kitobxon:      user@library.com   |  Parol: user123")
+    print("=" * 60)
+    print("Serverni to'xtatish uchun CTRL + C tugmalarini bosing.\n")
+
+    try:
+        subprocess.run([sys.executable, "manage.py", "runserver", "127.0.0.1:8000"])
     except KeyboardInterrupt:
         print("\nServer to'xtatildi.")
 
 if __name__ == '__main__':
     print("=" * 60)
-    print("  AQLLI KUTUBXONA TIZIMI - AVTOMATIK SOZLASH VA ISHGA TUSHIRISH")
+    print("  AQLLI KUTUBXONA TIZIMI - ISHGA TUSHIRISH")
     print("=" * 60)
     install_dependencies()
     setup_database()
-    run_flask_server()
+    run_server()

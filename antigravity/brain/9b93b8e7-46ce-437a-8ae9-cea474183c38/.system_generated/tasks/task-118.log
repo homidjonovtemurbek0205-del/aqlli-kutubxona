@@ -1,0 +1,5 @@
+Migrations for 'core':
+  core\migrations\0002_book_audio_file_book_audiobook_url_alter_book_file.py
+    + Add field audio_file to book
+    + Add field audiobook_url to book
+    ~ Alter field file on book

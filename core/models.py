@@ -117,9 +117,16 @@ class Book(models.Model):
     genre = models.CharField(max_length=100, default="PDF", verbose_name="Janr")
     description = models.TextField(blank=True, null=True, verbose_name="Qisqacha tavsif")
     content = models.TextField(blank=True, null=True, verbose_name="Matn kontenti")
-    file = models.FileField(upload_to='books/', null=True, blank=True)
+    file = models.FileField(upload_to='books/', null=True, blank=True, verbose_name="PDF fayli")
+    audio_file = models.FileField(upload_to='audio/', null=True, blank=True, verbose_name="Audio kitob fayli")
+    audiobook_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="Audio kitob havolasi")
     toc = models.JSONField(default=list, blank=True, null=True, verbose_name="Mundarija")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def has_audio(self):
+        return bool(self.audio_file or self.audiobook_url)
+
 
     class Meta:
         verbose_name = "Kitob"

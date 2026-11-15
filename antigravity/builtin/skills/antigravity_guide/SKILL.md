@@ -12,8 +12,8 @@ subdocumentation in the `references/` directory of this skill:
 ## 1. Surfaces Sitemap (Offline Subdocs)
 
 -   **Antigravity CLI (`agy`)**: [references/cli.md](references/cli.md)
-    -   Covers TUI navigation, keyboard shortcuts, CLI-only slash commands, and
-        `settings.json` configuration keys.
+    -   Pointers to the authoritative public CLI docs for slash commands,
+        features, settings, and best practices.
 -   **Antigravity IDE**: [references/ide.md](references/ide.md)
     -   Covers the standalone AI-first IDE, sidebar chat panels, and inline code
         lenses.
@@ -40,14 +40,15 @@ sitemap:
 
 -   **Main Documentation Home**: `https://antigravity.google/docs`
 -   **Skills**: `https://antigravity.google/docs/skills`
--   **Rules**: `https://antigravity.google/docs/rules`
+-   **Rules**: `https://antigravity.google/docs/rules-workflows`
 -   **Hooks**: `https://antigravity.google/docs/hooks`
 -   **Plugins**: `https://antigravity.google/docs/plugins`
 -   **Sidecars**: `https://antigravity.google/docs/sidecars`
 -   **Model Context Protocol (MCP)**: `https://antigravity.google/docs/mcp`
--   **Browser Automation & Testing**: `https://antigravity.google/docs/browser`
+-   **Browser Automation & Testing**:
+    `https://antigravity.google/docs/ide/browser`
 -   **Agent Permissions & Security**:
-    `https://antigravity.google/docs/agent-permissions`
+    `https://antigravity.google/docs/permissions`
 -   **Changelog & Release Notes**: `https://antigravity.google/changelog`
 -   **Troubleshooting & Support**: `https://antigravity.google/support`
     <!-- LINT.ThenChange(//depot/google3/third_party/gemini_coder/agent_ui_toolkit/dev/appVariant/externalAppVariant.ts:custom_links) -->

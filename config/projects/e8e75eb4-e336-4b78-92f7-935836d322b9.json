@@ -1,27 +1,28 @@
 {
-  "id":  "e8e75eb4-e336-4b78-92f7-935836d322b9",
-  "name":  "c:\\Users\\Surface PC\\.gemini",
-  "projectResources":  {
-    "resources":  [
+  "id": "e8e75eb4-e336-4b78-92f7-935836d322b9",
+  "name": "c:\\Users\\Surface PC\\.gemini",
+  "projectResources": {
+    "resources": [
       {
-        "gitFolder":  {
-          "folderUri":  "file:///c%3A%5CUsers%5CSurface%20PC%5C.gemini",
-          "defaultBranch":  "main"
+        "gitFolder": {
+          "folderUri": "file:///c%3A%5CUsers%5CSurface%20PC%5C.gemini",
+          "defaultBranch": "main"
         }
       }
     ]
   },
-  "permissionGrants":  {
-    "permissionGrants":  {
-      "allow":  [
+  "permissionGrants": {
+    "permissionGrants": {
+      "allow": [
         "command(\\.\\\\venv\\\\Scripts\\\\python\\.exe)"
       ]
     }
   },
-  "settings":  {
-    "fileAccessPolicy":  "AGENT_SETTING_POLICY_ASK",
-    "internetPolicy":  "AGENT_SETTING_POLICY_ASK",
-    "autoExecutionPolicy":  "CASCADE_COMMANDS_AUTO_EXECUTION_OFF",
-    "artifactReviewMode":  "ARTIFACT_REVIEW_MODE_ALWAYS"
-  }
+  "settings": {
+    "fileAccessPolicy": "AGENT_SETTING_POLICY_ASK",
+    "internetPolicy": "AGENT_SETTING_POLICY_ASK",
+    "autoExecutionPolicy": "CASCADE_COMMANDS_AUTO_EXECUTION_OFF",
+    "artifactReviewMode": "ARTIFACT_REVIEW_MODE_ALWAYS"
+  },
+  "updatedAt": "2026-08-16T14:55:44.393072400Z"
 }
