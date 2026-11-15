@@ -5,13 +5,16 @@ from .models import Book, User
 
 User = get_user_model()
 
+
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = User.EMAIL_FIELD
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'is_staff', 'is_superuser']
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
@@ -22,12 +25,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         extra_kwargs = {'username': {'required': False}}
 
     def create(self, validated_data):
+        username = validated_data.get('username') or validated_data['email'].split('@', 1)[0]
         user = User.objects.create_user(
             email=validated_data['email'],
-            username=validated_data.get('username'),
-            password=validated_data['password']
+            username=username,
+            password=validated_data['password'],
         )
         return user
+
 
 class BookSerializer(serializers.ModelSerializer):
     file = serializers.SerializerMethodField()
@@ -42,21 +47,24 @@ class BookSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.file.url)
         return obj.file.url if obj.file else None
 
+
 class PDFUploadSerializer(serializers.Serializer):
     pdffile = serializers.FileField(required=True)
 
     def validate_pdffile(self, value):
         if not value.name.lower().endswith('.pdf'):
-            raise serializers.ValidationError("Faqat .pdf formatidagi fayllarni yuklashingiz mumkin.")
+            raise serializers.ValidationError('Faqat .pdf formatidagi fayllarni yuklashingiz mumkin.')
         return value
+
 
 class ZIPUploadSerializer(serializers.Serializer):
     zipfile = serializers.FileField(required=True)
 
     def validate_zipfile(self, value):
         if not value.name.lower().endswith('.zip'):
-            raise serializers.ValidationError("Faqat .zip formatidagi fayllarni yuklashingiz mumkin.")
+            raise serializers.ValidationError('Faqat .zip formatidagi fayllarni yuklashingiz mumkin.')
         return value
+
 
 class ChatRequestSerializer(serializers.Serializer):
     message = serializers.CharField(required=True)
