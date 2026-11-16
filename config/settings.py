@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import os
 from pathlib import Path
 from datetime import timedelta
@@ -9,7 +9,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-p)w+v87g0m+*z&p$5pu
 DEBUG = os.getenv('DJANGO_DEBUG', '1') == '1'
 ALLOWED_HOSTS = ['*']
 
-=======
+
 """
 Django settings for config project.
 
@@ -42,7 +42,7 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
->>>>>>> abd65b8 (yana)
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -86,13 +86,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-<<<<<<< HEAD
-=======
+
 
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
->>>>>>> abd65b8 (yana)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -100,13 +98,12 @@ DATABASES = {
     }
 }
 
-<<<<<<< HEAD
-=======
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
 
->>>>>>> abd65b8 (yana)
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -122,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-<<<<<<< HEAD
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
@@ -131,8 +128,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-=======
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
@@ -161,12 +156,10 @@ MAILERS = {
     },
 }
 
->>>>>>> abd65b8 (yana)
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-<<<<<<< HEAD
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -196,9 +189,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:5173',
 ]
-=======
-    )
-}
+
 
 
 AUTH_USER_MODEL = 'core.User'
@@ -240,4 +231,4 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
->>>>>>> abd65b8 (yana)
+

@@ -24,12 +24,12 @@ from .models import Book, User
 from .serializers import (
     BookSerializer, 
     PDFUploadSerializer, 
-    AudioUploadSerializer,
     ZIPUploadSerializer, 
     ChatRequestSerializer,
     EmailTokenObtainPairSerializer,
     RegisterSerializer,
-    UserSerializer
+    UserSerializer,
+    AudioUploadSerializer
 )
 
 gemini_key = getattr(settings, "GEMINI_API_KEY", os.getenv("GEMINI_API_KEY"))
@@ -334,4 +334,4 @@ FOYDALANUVCHI SAVOLI: {user_message}"""
             )
             return Response({"reply": response.text}, status=status.HTTP_200_OK)
         except Exception:
-            return Response({"reply": local_fallback_answer()}, status=status.HTTP_200_OK)
+            return Response({"reply": local_fallback_answer()}, status=status.HTTP_200_OK)

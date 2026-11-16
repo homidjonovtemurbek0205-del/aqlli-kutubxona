@@ -3,11 +3,6 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> abd65b8 (yana)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
